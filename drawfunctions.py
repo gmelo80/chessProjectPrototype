@@ -57,7 +57,7 @@ def doComputerMove():
     ComputerIsMoving = True
     destClick = None
     originClick = None
-    game.doBestMove(30, 1)
+    game.doBestMove(20, 4)
     drawGame(canvas, game, square_width, images)
     printGame(game)
     ComputerIsMoving = False

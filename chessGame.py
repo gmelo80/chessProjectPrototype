@@ -2,7 +2,7 @@ from chess import *
 import time
 from printfunctions import printBoard
 from printfunctions import printAttacks
-from printfunctions import printPossibleMoves
+from printfunctions import printGame
 from positions import *
 
 Board = [
@@ -16,8 +16,8 @@ Board = [
     [' ', ' ', 'k', 'k', ' ', ' ', ' ', ' ']];
 
 Board=[
-        ['r', ' ', ' ', ' ', ' ', ' ', ' ', 'r'],
-        [' ', ' ', ' ', 'k', ' ', ' ', ' ', ' '],
+        ['r', ' ', ' ', ' ', 'k', ' ', ' ', 'r'],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -37,24 +37,7 @@ move=None
 
 
 while  move != "exit":
-    printBoard(game.board)
-    #printAttacks(game.whiteMovements.attacks, 'P')
-    print(" is white? " + str(game.isWhitesTurn()))
-
-    print(" is white king under attack? " + str(game.whiteMovements.isKingUnderAttack))
-    print(" is black king under attack? " + str(game.blackMovements.isKingUnderAttack))
-    print(" score: " + str(game.bestMoveScoreAndDepth()))
-    print("last Move: " + game.lastMoveStr())
-    print("state: " + game.state())
-    print("previous States: " + str(game.previousPositions))
-    print("white king moves: " + str(game.whiteMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.whiteMovements.kingValidMoves)))
-    print("black king moves: " + str(game.blackMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.blackMovements.kingValidMoves)))
-
-    printPossibleMoves(game)
-
-    if game.isCheckMate():
-        print("==== CHECKMATE ======")
-        break
+    printGame(game)
 
     moveStr=input("enter move or command:")
 

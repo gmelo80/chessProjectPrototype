@@ -308,7 +308,29 @@ class Game:
         (self.whiteMovements, self.blackMovements) = calculateMovements(self.board, self.castle_flags)
         self.possibleMoves = self.generatePossibleMoves()
 
+    def can_black_castle_queen_side(self):
+        if self.castle_flags["black_queen_side"] and self.board[0][4] == 'k' and self.board[0][0] == 'r' and self.board[0][1] == ' ' and self.board[0][2] == ' ' and self.board[0][3] == ' ':
+            return not self.whiteMovements.attacks[0][4] and not self.whiteMovements.attacks[0][3] and not self.whiteMovements.attacks[0][2]
+        else:
+            return False
 
+    def can_black_castle_king_side(self):
+        if self.castle_flags["black_king_side"] and self.board[0][4] == 'k' and self.board[0][7] == 'r' and self.board[0][5] == ' ' and self.board[0][6] == ' ':
+            return not self.whiteMovements.attacks[0][4] and not self.whiteMovements.attacks[0][5] and not self.whiteMovements.attacks[0][6]
+        else:
+            return False
+
+    def can_white_castle_queen_side(self):
+        if self.castle_flags["white_queen_side"] and self.board[7][4] == 'K' and self.board[7][0] == 'R' and self.board[7][1] == ' ' and self.board[7][2] == ' ' and self.board[7][3] == ' ':
+            return not self.blackMovements.attacks[7][4] and not self.blackMovements.attacks[7][3] and not self.blackMovements.attacks[7][2]
+        else:
+            return False
+
+    def can_white_castle_king_side(self):
+        if self.castle_flags["white_king_side"] and self.board[7][4] == 'K' and self.board[7][7] == 'R' and self.board[7][5] == ' ' and self.board[7][6] == ' ':
+            return not self.blackMovements.attacks[7][4] and not self.blackMovements.attacks[7][5] and not self.blackMovements.attacks[7][6]
+        else:
+            return False
 
     def generatePossibleMoves(self):
 
@@ -342,18 +364,18 @@ class Game:
                     print("failed undo - 2 -" + str(len(self.movementHistory)))
 
         # generate castle moves
-        opositeAttacks = self.blackMovements.attacks if self.isWhitesTurn() else self.whiteMovements.attacks
-        r1 = movements.kingPosition[0]
-        c1 = movements.kingPosition[1]
+        # opositeAttacks = self.blackMovements.attacks if self.isWhitesTurn() else self.whiteMovements.attacks
+        # r1 = movements.kingPosition[0]
+        # c1 = movements.kingPosition[1]
         # castleScore = 0.01
         # if movements.canCastleKingSide and not movements.isKingUnderAttack:
-        #     if len(opositeAttacks[r1][c1+1]) + len(opositeAttacks[r1][c1+2]) == 0:
-        #         moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
-        #         possibleMoves.append(moveNode)
-        # if movements.canCastleQueenSide and not movements.isKingUnderAttack:
-        #     if len(opositeAttacks[r1][c1-1]) + len(opositeAttacks[r1][c1-2]) == 0:
-        #         moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
-        #         possibleMoves.append(moveNode)
+        #      if len(opositeAttacks[r1][c1+1]) + len(opositeAttacks[r1][c1+2]) == 0:
+        #          moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
+        #          possibleMoves.append(moveNode)
+        #  if movements.canCastleQueenSide and not movements.isKingUnderAttack:
+        #      if len(opositeAttacks[r1][c1-1]) + len(opositeAttacks[r1][c1-2]) == 0:
+        #          moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
+        #          possibleMoves.append(moveNode)
 
 
         return sorted(possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
@@ -367,29 +389,39 @@ class Game:
 
 
 
-    def move(self, r1, c1, r2, c2):
-        if not self.passBasicValidation(r1, c1, r2, c2):
+    def move(self, r1, c1, r2, c2, validate=True):
+        if validate and not self.passBasicValidation(r1, c1, r2, c2):
            return False;
 
-        if not self.tryMove(r1, c1, r2, c2):
+        if not self.tryMove(r1, c1, r2, c2, validate):
             #squareValue1 = self.board[r1][c1]
             #print("invalid move king is in a attacked square", str(self.isWhitesTurn()), squareValue1, r1, r2, c1, c2)
             #printBoard(self.board)
             return False
         else:
             self.calculateMoves()
+            # update castle flags
+            self.castle_flags["black_king_side"] = self.castle_flags["black_king_side"] and not ( (r1 == 0) and (c1 == 4 or c1 == 7))
+            self.castle_flags["black_queen_side"] = self.castle_flags["black_queen_side"] and not ((r1 == 0) and (c1 == 4 or c1 == 0))
+            self.castle_flags["white_king_side"] = self.castle_flags["white_king_side"] and not ((r1 == 7) and (c1 == 4 or c1 == 7))
+            self.castle_flags["white_queen_side"] = self.castle_flags["white_queen_side"] and not ((r1 == 7) and (c1 == 4 or c1 == 0))
             return True;
 
+    def doValidatedMove(self, moveNode):
+        self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2, False)
 
-    def tryMove(self, r1, c1, r2, c2):
+
+
+
+    def tryMove(self, r1, c1, r2, c2, validate=True):
 
         squareValue1 = self.board[r1][c1]
         squareValue2 = self.board[r2][c2]
 
-        if isSameColor(squareValue1, squareValue2):
+        if validate and isSameColor(squareValue1, squareValue2):
             return False
 
-        if squareValue1.upper() == 'P':
+        if validate and squareValue1.upper() == 'P':
             if squareValue2 == ' ' and c1 != c2:
                 return False
 
@@ -397,7 +429,7 @@ class Game:
         #move = (r1, c1, squareValue1, r2, c2, squareValue2, self.whiteMovements, self.blackMovements, self.possibleMoves)
 
         saved_positions = [SquarePositionValue(squareValue1, r1, c1), SquarePositionValue(squareValue2, r2, c2)]
-        historyState = HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags)
+        historyState = HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
 
         # if pawn promotion
         if squareValue1 == 'P' and r2 == 0: squareValue1 = 'Q'
@@ -418,7 +450,7 @@ class Game:
 
         (self.whiteMovements, self.blackMovements) = calculateMovements(self.board, self.castle_flags)
         #print("trying [" + str(r1) +"," + str(c1) +"->" + str(r2) +"," + str(c2) +"]" )
-        if self.isKingUnderAttack(isWhitesTurn):
+        if validate and self.isKingUnderAttack(isWhitesTurn):
             if not self.undo():
                 print("failed undo - under attack undo -" + str(len(self.movementHistory)))
             return False
@@ -490,7 +522,6 @@ class Game:
         if len(self.movementHistory) > 0:
             historyState = self.movementHistory.pop()
 
-           # (r1, c1, val1, r2, c2, val2, self.whiteMovements, self.blackMovements, self.possibleMoves) = move
             self.whiteMovements = historyState.white_movements
             self.blackMovements = historyState.black_movements
             self.possibleMoves = historyState.possible_moves
@@ -500,9 +531,6 @@ class Game:
 
             for square_pos in historyState.square_pos_value_list:
                 self.board[square_pos.row][square_pos.col] = square_pos.value
-
-            #self.board[r1][c1] = val1
-            #self.board[r2][c2] = val2
 
             self.previousPositions[positionStr] = self.previousPositions[positionStr] - 1
             if self.previousPositions[positionStr] == 0:
@@ -554,6 +582,7 @@ class Game:
                 return 0.0, self.MAX_SCORE
 
 
+    # no longer in use
     def evaluateBestNode(self):
         moveNode = self.possibleMoves[0]
         self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
@@ -576,27 +605,33 @@ class Game:
             return self.move(bestMoveNode.r1, bestMoveNode.c1, bestMoveNode.r2, bestMoveNode.c2)
         return False
 
+
+    # for each possible move, update the score value by making a tree search
+    # this method will execute moves and undo to update the scores
     def evaluateMoveScore(self, maxMoves, depth):
         if depth == 0:
             newScore, depth = self.bestMoveScoreAndDepth()
             return newScore
         else:
-            #print(" before eval " + str(depth))
-            #printPossibleMoves(self)
+            # it will perform a tree search just on the first moves
             movementsToCheck = min(maxMoves, len(self.possibleMoves))
             for moveNumber in range(0, movementsToCheck):
                 moveNode = self.possibleMoves[moveNumber]
-                move_sucess = self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
 
+                # this need to change to move without validation
+                #move_sucess = self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
+                move_sucess = self.doValidatedMove(moveNode)
+
+                # each time it search depth the number of moves are reduced
                 newMaxMoves = max(1, maxMoves//4)
+                # update the move score
                 moveNode.score = self.evaluateMoveScore(newMaxMoves, depth-1)
                 moveNode.depthEvaluated = depth
                 if not self.undo():
                     print("failed to undo z", str(moveNode) , " --> " ,move_sucess)
                     printBoard(self.board)
 
-            #print(" after eval " + str(depth))
-            #printPossibleMoves(self)
+            # after the moves in this level is done, sort the moves based on the score and return the best score
             self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
             newScore, depth = self.bestMoveScoreAndDepth()
             return newScore

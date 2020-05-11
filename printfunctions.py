@@ -56,3 +56,16 @@ def printGame(game):
     print("previous States: " + str(game.previousPositions))
     print("white king moves: " + str(game.whiteMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.whiteMovements.kingValidMoves)))
     print("black king moves: " + str(game.blackMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.blackMovements.kingValidMoves)))
+
+    print("castle Flags: " + str(game.castle_flags))
+    print("can_black_castle_queen_side: " + str(game.can_black_castle_queen_side()))
+    print("can_black_castle_king_side: " + str(game.can_black_castle_king_side()))
+    print("can_white_castle_queen_side: " + str(game.can_white_castle_queen_side()))
+    print("can_white_castle_king_side: " + str(game.can_white_castle_king_side()))
+
+
+
+    printPossibleMoves(game)
+
+    if game.isCheckMate():
+        print("==== CHECKMATE ======")
