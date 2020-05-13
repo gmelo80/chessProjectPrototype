@@ -236,6 +236,8 @@ class MoveNode:
         self.score = score
         self.depthEvaluated = depthEvaluated
 
+
+
     def __str__(self):
         return "["+str(self.r1)+","+str(self.c1)+" -> "+str(self.r2)+","+str(self.c2)+"]("+str(self.score)+"/"+str(self.depthEvaluated)+")"
 
@@ -332,6 +334,14 @@ class Game:
         else:
             return False
 
+    def can_castle_queen_side(self):
+        return self.can_white_castle_queen_side() if self.isWhitesTurn() else self.can_black_castle_queen_side();
+
+
+    def can_castle_king_side(self):
+        return self.can_white_castle_king_side() if self.isWhitesTurn() else self.can_black_castle_king_side();
+
+
     def generatePossibleMoves(self):
 
         movements = self.whiteMovements if self.isWhitesTurn() else self.blackMovements
@@ -364,6 +374,25 @@ class Game:
                     print("failed undo - 2 -" + str(len(self.movementHistory)))
 
         # generate castle moves
+        r1 = r2= movements.kingPosition[0]
+        c1 = movements.kingPosition[1]
+
+        if self.can_castle_king_side():
+            c2 = c1 + 2
+            self.tryMove(r1, c1, r2, c2, False)
+            moveNode = MoveNode(r1, c1, r2, c2, self.score())
+            possibleMoves.append(moveNode)
+            if not self.undo():
+                print("failed undo - castle k -" + str(len(self.movementHistory)))
+
+        if self.can_castle_queen_side():
+            c2 = c1 - 3
+            self.tryMove(r1, c1, r2, c2, False)
+            moveNode = MoveNode(r1, c1, r2, c2, self.score())
+            possibleMoves.append(moveNode)
+            if not self.undo():
+                print("failed undo - castle q-" + str(len(self.movementHistory)))
+
         # opositeAttacks = self.blackMovements.attacks if self.isWhitesTurn() else self.whiteMovements.attacks
         # r1 = movements.kingPosition[0]
         # c1 = movements.kingPosition[1]
@@ -411,7 +440,8 @@ class Game:
         self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2, False)
 
 
-
+    def is_castle_move(self, r1, c1, r2, c2):
+        return self.board[r1][c1].upper() == 'K' and abs(c1-c2) == 2
 
     def tryMove(self, r1, c1, r2, c2, validate=True):
 
@@ -428,7 +458,20 @@ class Game:
         isWhitesTurn = self.isWhitesTurn()
         #move = (r1, c1, squareValue1, r2, c2, squareValue2, self.whiteMovements, self.blackMovements, self.possibleMoves)
 
+
         saved_positions = [SquarePositionValue(squareValue1, r1, c1), SquarePositionValue(squareValue2, r2, c2)]
+
+        if self.is_castle_move(r1, c1, r2, c2):
+            # move rook
+            if c2 == 6:
+                self.board[r1][5] = self.board[r1][7]
+                self.board[r1][7] = ' '
+                saved_positions += [SquarePositionValue(self.board[r1][5] , r1, 7), SquarePositionValue(' ', r1, 5)]
+            if c2 == 1:
+                self.board[r1][2] = self.board[r1][0]
+                self.board[r1][0] = ' '
+                saved_positions += [SquarePositionValue(self.board[r1][2] , r1, 0) , SquarePositionValue(' ', r1, 2)]
+
         historyState = HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
 
         # if pawn promotion
