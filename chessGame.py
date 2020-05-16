@@ -15,15 +15,18 @@ Board = [
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', 'k', 'k', ' ', ' ', ' ', ' ']];
 
-Board=[
-        ['r', ' ', ' ', ' ', 'k', ' ', ' ', 'r'],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        ['R', ' ', ' ', ' ', 'K', ' ', ' ', 'R']];
+Board= [
+    ['r', ' ', ' ', ' ', 'k', 'b', 'n', 'r'],
+    ['p', 'p', 'p', 'p', ' ', 'p', 'p', 'p'],
+    [' ', ' ', 'n', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'b', ' ', 'q', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', 'N', 'P', ' ', 'N', 'P', ' '],
+    ['P', 'P', 'P', 'B', 'Q', 'P', 'B', 'P'],
+    ['R', ' ', ' ', ' ', ' ', 'R', 'K', ' ']];
+
+
+
 
 #Board=KING_AND_ROOKS_POSITION
 IsWhiteTurn=False
@@ -44,9 +47,33 @@ while  move != "exit":
     if moveStr == "move":
         print(" thinking.....")
         start = time.time()
-        game.doBestMove(20,4)
+        game.doBestMove([30,1,1,1])
         end = time.time()
         print(" found move after " + str(end-start) + " secs !")
+    elif moveStr.startswith("eval"):
+
+        tokens = moveStr.split(":")[1].split(",")
+
+        if len(tokens) >= 2:
+            print(" evaluating, maxMoves "+moveStr.split(":")[1] +".....")
+
+            maxMoveArray = []
+            for t in tokens:
+                maxMoveArray.append(int(t))
+
+            start = time.time()
+            game.do_timed_evaluated_move_score(maxMoveArray)
+            end = time.time()
+            print(" evaluating time " + str(end-start) + " secs !")
+        else:
+            print(" evaluating, max time" + tokens[0] +".....")
+
+            maxtime = int(tokens[0])
+            start = time.time()
+            game.evaluate_until_time(maxtime)
+            end = time.time()
+            print(" evaluating time " + str(end - start) + " secs !")
+
     elif moveStr == "undo":
         game.undo()
     elif moveStr == "exit":

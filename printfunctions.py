@@ -50,18 +50,22 @@ def printGame(game):
 
     print(" is white king under attack? " + str(game.whiteMovements.isKingUnderAttack))
     print(" is black king under attack? " + str(game.blackMovements.isKingUnderAttack))
-    print(" score: " + str(game.bestMoveScoreAndDepth()))
-    print("last Move: " + game.lastMoveStr())
+    print(" bestMove score: " + str(game.bestMoveScoreAndDepth()))
+    print(" board score: " + str(round(game.score(), 3)))
+    print("last Move [no=" + str(game.number_of_moves()) + "]: " + game.lastMoveStr())
     print("state: " + game.state())
     print("previous States: " + str(game.previousPositions))
-    print("white king moves: " + str(game.whiteMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.whiteMovements.kingValidMoves)))
-    print("black king moves: " + str(game.blackMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.blackMovements.kingValidMoves)))
-
+    #print("white king moves: " + str(game.whiteMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.whiteMovements.kingValidMoves)))
+    #print("black king moves: " + str(game.blackMovements.kingValidMoves) + " -- Score: " + str(game.scoreKingMoves(game.blackMovements.kingValidMoves)))
+    print("eval time: " + str(game.get_evaluation_time()) + " secs")
     print("castle Flags: " + str(game.castle_flags))
-    print("can_black_castle_queen_side: " + str(game.can_black_castle_queen_side()))
-    print("can_black_castle_king_side: " + str(game.can_black_castle_king_side()))
-    print("can_white_castle_queen_side: " + str(game.can_white_castle_queen_side()))
-    print("can_white_castle_king_side: " + str(game.can_white_castle_king_side()))
+    #print("can_black_castle_queen_side: " + str(game.can_black_castle_queen_side()))
+    #print("can_black_castle_king_side: " + str(game.can_black_castle_king_side()))
+    #print("can_white_castle_queen_side: " + str(game.can_white_castle_queen_side()))
+    #print("can_white_castle_king_side: " + str(game.can_white_castle_king_side()))
+
+    #print("game score: " + str(game.score()))
+    #print("nodes evaluated: " + str(game.num_nodes_evaluated()))
 
 
 

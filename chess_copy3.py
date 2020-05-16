@@ -436,7 +436,7 @@ class Game:
 
     def bestMoveScoreAndDepth(self):
         if self.possibleMoves:
-            return self.possibleMoves[0].score, self.possibleMoves[0].depthEvaluated
+            return self.possibleMoves[0].score, self.possibleMoves[0].nodesEvaluated
         else:
             if self.isCheckMate():
                 sign = -1.0 if self.isWhitesTurn() else 1.0
@@ -453,7 +453,7 @@ class Game:
         newScore, depth = self.bestMoveScoreAndDepth()
         self.undo()
         moveNode.score = newScore
-        moveNode.depthEvaluated = moveNode.depthEvaluated+1
+        moveNode.nodesEvaluated = moveNode.nodesEvaluated + 1
         self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
 
     def doBestMove(self, maxMoves, depth):
@@ -475,7 +475,7 @@ class Game:
 
                 newMaxMoves = max(1, maxMoves/4)
                 moveNode.score = self.evaluateMoveScore(maxMoves, depth-1)
-                moveNode.depthEvaluated = depth
+                moveNode.nodesEvaluated = depth
                 self.undo()
 
             #print(" after eval " + str(depth))

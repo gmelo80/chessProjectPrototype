@@ -2,6 +2,7 @@ from printfunctions import printBoard
 from printfunctions import printAttacks
 from printfunctions import printPossibleMoves
 from positions import INITIAL_POSITION
+from printfunctions import printGame
 
 import time
 
@@ -228,18 +229,20 @@ def rowAsStr(boardRow):
 
 
 class MoveNode:
-    def __init__(self, r1, c1, r2, c2, score, depthEvaluated=0):
+    def __init__(self, r1, c1, r2, c2, score, nodesEvaluated=1):
         self.r1 = r1
         self.c1 = c1
         self.r2 = r2
         self.c2 = c2
         self.score = score
-        self.depthEvaluated = depthEvaluated
+        self.nodesEvaluated = nodesEvaluated
 
+    def is_same(self, node):
+        return self.c1== node.c1 and self.c2 == node.c2 and self.r1== node.r1 and self.r2 == node.r2;
 
 
     def __str__(self):
-        return "["+str(self.r1)+","+str(self.c1)+" -> "+str(self.r2)+","+str(self.c2)+"]("+str(self.score)+"/"+str(self.depthEvaluated)+")"
+        return "[" + str(self.r1) +"," + str(self.c1) +" -> " + str(self.r2) +"," + str(self.c2) +"](" + str(round(self.score,3)) +"/" + str(self.nodesEvaluated) + ")"
 
 class SquarePositionValue:
     def __init__(self, value, row, col):
@@ -268,9 +271,12 @@ class Game:
 
     def __init__(self, board, whiteStarts):
         self.MAX_SCORE = 1000000
-        self.attackScore = 0.0
+        self.attackScore = 0.01
         self.kindMoveFactor = 0.01
-        self.pawn_move_score_factor = 0.05
+        self.pawn_move_score_factor = 0.003
+        self.center_score_factor = 1.05
+        self.wide_center_score_factor = 1.01
+
         self.pieceScoreMap = {
             " ": 0,
             "K": 0,
@@ -297,12 +303,20 @@ class Game:
         self.calculateMoves()
         self.evaluation_start_time = 0
         self.evaluation_end_time = 0
+        # max time in seconds
+        self.evaluation_max_time = 6
 
 
     def state(self):
         stateStr = ""
         for row in self.board:
             stateStr += rowAsStr(row) + "-"
+        stateStr += "1" if self.castle_flags["black_king_side"] else "0"
+        stateStr += "1" if self.castle_flags["black_queen_side"] else "0"
+        stateStr += "1" if self.castle_flags["white_king_side"] else "0"
+        stateStr += "1" if self.castle_flags["white_queen_side"] else "0"
+        #stateStr += "1" if self.isWhitesTurn() else "0"
+
         return stateStr
 
 
@@ -393,18 +407,7 @@ class Game:
             if not self.undo():
                 print("failed undo - castle q-" + str(len(self.movementHistory)))
 
-        # opositeAttacks = self.blackMovements.attacks if self.isWhitesTurn() else self.whiteMovements.attacks
-        # r1 = movements.kingPosition[0]
-        # c1 = movements.kingPosition[1]
-        # castleScore = 0.01
-        # if movements.canCastleKingSide and not movements.isKingUnderAttack:
-        #      if len(opositeAttacks[r1][c1+1]) + len(opositeAttacks[r1][c1+2]) == 0:
-        #          moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
-        #          possibleMoves.append(moveNode)
-        #  if movements.canCastleQueenSide and not movements.isKingUnderAttack:
-        #      if len(opositeAttacks[r1][c1-1]) + len(opositeAttacks[r1][c1-2]) == 0:
-        #          moveNode = MoveNode(r1, c1, r1, c1+2, self.score() + castleScore)
-        #          possibleMoves.append(moveNode)
+
 
 
         return sorted(possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
@@ -615,14 +618,19 @@ class Game:
 
     def bestMoveScoreAndDepth(self):
         if self.possibleMoves:
-            return self.possibleMoves[0].score, self.possibleMoves[0].depthEvaluated
+            # after the moves in this level is done, sort the moves based on the score and return the best score
+            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
+            return self.possibleMoves[0].score, self.num_nodes_evaluated()
         else:
             if self.isCheckMate():
                 sign = -1.0 if self.isWhitesTurn() else 1.0
-                return self.MAX_SCORE * sign, self.MAX_SCORE
+                return self.MAX_SCORE * sign, 1
 
             if self.isStaleMate():
-                return 0.0, self.MAX_SCORE
+                return 0.0, 1
+
+    def num_nodes_evaluated(self):
+        return sum(node.nodesEvaluated for node in self.possibleMoves)
 
 
     # no longer in use
@@ -635,49 +643,99 @@ class Game:
             print("failed to undo xx", str(moveNode))
             printBoard(self.board)
         moveNode.score = newScore
-        moveNode.depthEvaluated = moveNode.depthEvaluated+1
+        moveNode.nodesEvaluated = moveNode.nodesEvaluated + 1
         self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
 
-    def doBestMove(self, maxMoves, depth):
-        self.evaluation_start_time = time.time()
-        self.evaluateMoveScore(maxMoves, depth)
-        self.evaluation_end_time = time.time()
-        print("total time: ", (self.evaluation_end_time - self.evaluation_start_time), " secs")
+    def doBestMove(self, maxMovesArray):
+        self.do_timed_evaluated_move_score(maxMovesArray)
+        print("total time: ", self.get_evaluation_time(), " secs")
+        if self.possibleMoves:
+            bestMoveNode = self.possibleMoves[0]
+            return self.move(bestMoveNode.r1, bestMoveNode.c1, bestMoveNode.r2, bestMoveNode.c2)
+        return False
+
+    def do_best_move(self, max_time):
+        self.evaluate_until_time(max_time)
+        print("GAME after evaluated:: ==========")
+        printGame(self)
         if self.possibleMoves:
             bestMoveNode = self.possibleMoves[0]
             return self.move(bestMoveNode.r1, bestMoveNode.c1, bestMoveNode.r2, bestMoveNode.c2)
         return False
 
 
+    def get_evaluation_time(self):
+        if self.evaluation_end_time > self.evaluation_start_time:
+            return self.evaluation_end_time - self.evaluation_start_time
+        else:
+            return self.get_current_evaluation_time()
+
+    def get_current_evaluation_time(self):
+        return time.time() - self.evaluation_start_time;
+
+    def do_timed_evaluated_move_score(self, maxMovesArray):
+        self.evaluation_start_time = time.time()
+        self.evaluate_move_score(maxMovesArray, True)
+        self.evaluation_end_time = time.time()
+
+    def evaluate_until_time(self, maxTime):
+        self.evaluation_start_time = time.time()
+        self.evaluation_max_time = maxTime
+
+
+        evalCount = 0
+
+        self.evaluate_move_score([100,2,2,1,1,1,1], False)
+
+        while not self.evaluation_max_time_reached():
+            self.evaluate_move_score([1,4,3,3,1,1,1], False)
+            evalCount += 1
+            if self.evaluation_max_time_reached():
+                break
+
+        self.evaluation_end_time = time.time()
+        print("eval counts: " + str(evalCount))
+
+
+
+    def evaluation_max_time_reached(self):
+        return self.get_current_evaluation_time() >= self.evaluation_max_time;
+
+
+    def evaluate_move_score(self, maxMovesArray, stop_after_max_time=False):
+        self.evaluateMoveScore(maxMovesArray, 0, stop_after_max_time)
+
+
     # for each possible move, update the score value by making a tree search
     # this method will execute moves and undo to update the scores
-    def evaluateMoveScore(self, maxMoves, depth):
-        if depth == 0:
-            newScore, depth = self.bestMoveScoreAndDepth()
-            return newScore
+    def evaluateMoveScore(self, maxMoves, depth, stop_after_max_time=False):
+        if depth >= len(maxMoves) or (stop_after_max_time and self.evaluation_max_time_reached()):
+            return self.bestMoveScoreAndDepth()
         else:
             # it will perform a tree search just on the first moves
-            movementsToCheck = min(maxMoves, len(self.possibleMoves))
+            movementsToCheck = min(maxMoves[depth], len(self.possibleMoves))
             for moveNumber in range(0, movementsToCheck):
+                if (stop_after_max_time and self.evaluation_max_time_reached()):
+                    break
                 moveNode = self.possibleMoves[moveNumber]
 
                 # this need to change to move without validation
                 #move_sucess = self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
                 move_sucess = self.doValidatedMove(moveNode)
 
-                # each time it search depth the number of moves are reduced
-                newMaxMoves = max(1, maxMoves//4)
                 # update the move score
-                moveNode.score = self.evaluateMoveScore(newMaxMoves, depth-1)
-                moveNode.depthEvaluated = depth
+                score, nodesEvaluated = self.evaluateMoveScore(maxMoves, depth + 1)
+                moveNode.score = score
+                moveNode.nodesEvaluated += nodesEvaluated
+
+
                 if not self.undo():
                     print("failed to undo z", str(moveNode) , " --> " ,move_sucess)
                     printBoard(self.board)
 
-            # after the moves in this level is done, sort the moves based on the score and return the best score
-            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
-            newScore, depth = self.bestMoveScoreAndDepth()
-            return newScore
+
+            return self.bestMoveScoreAndDepth()
+
 
     def score_if_is_pawn(self, row, col):
         moveScore = 0
@@ -699,12 +757,19 @@ class Game:
             score += self.pieceScoreMap[squareValue.upper()]
 
             # each attacked square also score
+        center_factor = self.calc_center_score_factor(row, col)
         score += self.attackScore * len(self.whiteMovements.attacks[row][col])
         score -= self.attackScore * len(self.blackMovements.attacks[row][col])
 
+        return score * center_factor
 
-
-        return score
+    def calc_center_score_factor(self, row, col):
+        if row > 0+2 and row < 8-2 and col > 0+2 and col < 8-2:
+            return self.center_score_factor
+        elif row > 0+1 and row < 8-1 and col > 0+1 and col < 8-1:
+            return self.wide_center_score_factor
+        else:
+            return 1.0
 
     def scoreKingMoves(self, kingValidMoves):
         score = 0.0
@@ -717,9 +782,10 @@ class Game:
 
 
     def isFinal(self):
-        return True
+        return self.number_of_moves() > 40
 
-
+    def number_of_moves(self):
+        return len(self.movementHistory)
 
 class Movements:
     def __init__(self, attacks, kingPosition, isKingUnderAttack, kingValidMoves, pawnMoves, canCastleKingSide, canCastleQueenSide):

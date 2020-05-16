@@ -9,7 +9,18 @@ from tkinter import *
 import time
 
 
-game = Game(INITIAL_POSITION, True)
+Board= [
+    ['r', 'n', 'b', ' ', 'k', 'b', 'n', 'r'],
+    ['p', 'p', 'p', ' ', ' ', 'p', 'p', 'p'],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'q', 'p', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
+    ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
+    ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']];
+
+Board = INITIAL_POSITION
+game = Game(Board, True)
 
 originClick=None
 destClick=None
@@ -57,7 +68,8 @@ def doComputerMove():
     ComputerIsMoving = True
     destClick = None
     originClick = None
-    game.doBestMove(20, 4)
+    #game.doBestMove(30, 6)
+    game.do_best_move(10)
     drawGame(canvas, game, square_width, images)
     printGame(game)
     ComputerIsMoving = False
@@ -92,10 +104,12 @@ def callback(event):
         if game.moveIfPossible(originClick[0],originClick[1],destClick[0], destClick[1]):
             originClick = destClick
             destClick = None
+            printGame(game)
         else:
             destClick = None
             originClick = None
         drawGame(canvas, game, square_width, images)
+
 
         canvas.after(20)
         canvas.update()
