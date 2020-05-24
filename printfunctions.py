@@ -45,6 +45,7 @@ def moveAsString(move, board):
     return origin + str(move)
 
 def printGame(game):
+    game.sortPossibleMoves()
     printBoard(game.board)
     print(" is white? " + str(game.isWhitesTurn()))
 

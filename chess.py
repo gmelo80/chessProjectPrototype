@@ -123,80 +123,93 @@ def attackSquares(piece, row, col, board):
 
 
 def calculateMovements(board, can_castle_status):
-    # first clean up the attacks
-    whiteKingSquare= None;
-    blackKingSquare = None;
+    try:
+        # first clean up the attacks
+        whiteKingSquare= None;
+        blackKingSquare = None;
 
-    whitePawnMoves = []
-    blackPawnMoves = []
+        whitePawnMoves = []
+        blackPawnMoves = []
 
-    whiteAttackMoves = []
-    blackAttackMoves = []
-    for r in range(0, 8):
-        whiteAttackMoves.append([])
-        blackAttackMoves.append([])
-        for c in range(0, 8):
-            whiteAttackMoves[r].append([])
-            blackAttackMoves[r].append([])
+        whiteAttackMoves = []
+        blackAttackMoves = []
 
-    # re-calculate for each piece on the board
-    for r in range(0, 8):
-        for c in range(0, 8):
-            piece = board[r][c]
+        whiteCaptures = []
+        blackCaptures = []
 
-            pieceAttacksSquares = attackSquares(piece, r, c, board)
+        for r in range(0, 8):
+            whiteAttackMoves.append([])
+            blackAttackMoves.append([])
+            for c in range(0, 8):
+                whiteAttackMoves[r].append([])
+                blackAttackMoves[r].append([])
 
-            if piece == 'k':
-                blackKingAttackSquares = pieceAttacksSquares
-                blackKingSquare = (r, c)
-            elif piece == 'K':
-                whiteKingAttackSquares = pieceAttacksSquares
-                whiteKingSquare = (r, c)
-            elif piece == 'P' and board[r-1][c] == ' ':
-                whitePawnMoves.append((r,c,r-1,c))
-                # pawn jump
-                if r == 6 and board[r-2][c] == ' ':
-                    whitePawnMoves.append((r, c, r - 2, c))
-            elif piece == 'p'and board[r+1][c] == ' ':
-                blackPawnMoves.append((r,c,r+1,c))
-                # pawn jump
-                if r == 1 and board[r+2][c] == ' ':
-                    blackPawnMoves.append((r, c, r + 2, c))
-            for attackSquare in pieceAttacksSquares:
-                moveOrigin = (piece, r, c)
-                attackRow = attackSquare[0];
-                attackCol = attackSquare[1];
-                if isWhitePiece(piece):
-                    whiteAttackMoves[attackRow][attackCol].append(moveOrigin)
-                else:
-                    blackAttackMoves[attackRow][attackCol].append(moveOrigin)
+        # re-calculate for each piece on the board
+        for r in range(0, 8):
+            for c in range(0, 8):
+                piece = board[r][c]
 
-    # mark if king is under Attack
-    blackKingIsUnderAttack = False
-    if whiteAttackMoves[blackKingSquare[0]][blackKingSquare[1]]:
-       blackKingIsUnderAttack = True
+                pieceAttacksSquares = attackSquares(piece, r, c, board)
 
-    whiteKingIsUnderAttack = False
-    if blackAttackMoves[whiteKingSquare[0]][whiteKingSquare[1]]:
-       whiteKingIsUnderAttack = True
+                if piece == 'k':
+                    blackKingAttackSquares = pieceAttacksSquares
+                    blackKingSquare = (r, c)
+                elif piece == 'K':
+                    whiteKingAttackSquares = pieceAttacksSquares
+                    whiteKingSquare = (r, c)
+                elif piece == 'P' and board[r-1][c] == ' ':
+                    whitePawnMoves.append((r,c,r-1,c))
+                    # pawn jump
+                    if r == 6 and board[r-2][c] == ' ':
+                        whitePawnMoves.append((r, c, r - 2, c))
+                elif piece == 'p'and board[r+1][c] == ' ':
+                    blackPawnMoves.append((r,c,r+1,c))
+                    # pawn jump
+                    if r == 1 and board[r+2][c] == ' ':
+                        blackPawnMoves.append((r, c, r + 2, c))
+                for attackSquare in pieceAttacksSquares:
+                    moveOrigin = (piece, r, c)
+                    attackRow = attackSquare[0]
+                    attackCol = attackSquare[1]
+                    attacked_piece = board[attackRow][attackCol]
+                    if isWhitePiece(piece):
+                        whiteAttackMoves[attackRow][attackCol].append(moveOrigin)
+                        if isBlackPiece(attacked_piece):
+                            whiteCaptures.append(Capture(piece,attacked_piece, r,c,attackRow,attackCol))
+                    else:
+                        blackAttackMoves[attackRow][attackCol].append(moveOrigin)
+                        if isWhitePiece(attacked_piece):
+                            blackCaptures.append(Capture(piece,attacked_piece, r,c,attackRow,attackCol))
 
-    blackKingValidMoves = []
-    for blackKingAttack in blackKingAttackSquares:
-        if not whiteAttackMoves[blackKingAttack[0]][blackKingAttack[1]] and not isBlackPiece(board[blackKingAttack[0]][blackKingAttack[1]]):
-            blackKingValidMoves.append(blackKingAttack)
+        # mark if king is under Attack
+        blackKingIsUnderAttack = False
+        if whiteAttackMoves[blackKingSquare[0]][blackKingSquare[1]]:
+           blackKingIsUnderAttack = True
 
-    whiteKingValidMoves = []
-    for whiteKingAttack in whiteKingAttackSquares:
-        if not blackAttackMoves[whiteKingAttack[0]][whiteKingAttack[1]] and not isWhitePiece(board[whiteKingAttack[0]][whiteKingAttack[1]]):
-            whiteKingValidMoves.append(whiteKingAttack)
+        whiteKingIsUnderAttack = False
+        if blackAttackMoves[whiteKingSquare[0]][whiteKingSquare[1]]:
+           whiteKingIsUnderAttack = True
 
-    # check castle moves
+        blackKingValidMoves = []
+        for blackKingAttack in blackKingAttackSquares:
+            if not whiteAttackMoves[blackKingAttack[0]][blackKingAttack[1]] and not isBlackPiece(board[blackKingAttack[0]][blackKingAttack[1]]):
+                blackKingValidMoves.append(blackKingAttack)
+
+        whiteKingValidMoves = []
+        for whiteKingAttack in whiteKingAttackSquares:
+            if not blackAttackMoves[whiteKingAttack[0]][whiteKingAttack[1]] and not isWhitePiece(board[whiteKingAttack[0]][whiteKingAttack[1]]):
+                whiteKingValidMoves.append(whiteKingAttack)
+
+        # check castle moves
 
 
-    whiteMoves = Movements(whiteAttackMoves, whiteKingSquare, whiteKingIsUnderAttack, whiteKingValidMoves, whitePawnMoves, True, True)
-    blackMoves = Movements(blackAttackMoves, blackKingSquare, blackKingIsUnderAttack, blackKingValidMoves, blackPawnMoves, True, True)
+        whiteMoves = Movements(whiteAttackMoves, whiteKingSquare, whiteKingIsUnderAttack, whiteKingValidMoves, whitePawnMoves, whiteCaptures, True, True)
+        blackMoves = Movements(blackAttackMoves, blackKingSquare, blackKingIsUnderAttack, blackKingValidMoves, blackPawnMoves, blackCaptures, True, True)
 
-    return (whiteMoves, blackMoves)
+        return (whiteMoves, blackMoves)
+    except (RuntimeError, TypeError, NameError):
+        print("Error calc moves for the board")
+        printBoard(board)
 
 
 def isWhitePiece(piece):
@@ -276,6 +289,8 @@ class Game:
         self.pawn_move_score_factor = 0.003
         self.center_score_factor = 1.05
         self.wide_center_score_factor = 1.01
+        self.check_store = 0.02
+        self.capture_factor = 0.05
 
         self.pieceScoreMap = {
             " ": 0,
@@ -305,6 +320,7 @@ class Game:
         self.evaluation_end_time = 0
         # max time in seconds
         self.evaluation_max_time = 6
+        self.evaluation_timed_out = False
 
 
     def state(self):
@@ -393,24 +409,27 @@ class Game:
 
         if self.can_castle_king_side():
             c2 = c1 + 2
-            self.tryMove(r1, c1, r2, c2, False)
-            moveNode = MoveNode(r1, c1, r2, c2, self.score())
-            possibleMoves.append(moveNode)
-            if not self.undo():
-                print("failed undo - castle k -" + str(len(self.movementHistory)))
+            if self.tryMove(r1, c1, r2, c2, False):
+                moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                possibleMoves.append(moveNode)
+                if not self.undo():
+                    print("failed undo - castle k -" + str(len(self.movementHistory)))
 
         if self.can_castle_queen_side():
             c2 = c1 - 3
-            self.tryMove(r1, c1, r2, c2, False)
-            moveNode = MoveNode(r1, c1, r2, c2, self.score())
-            possibleMoves.append(moveNode)
-            if not self.undo():
-                print("failed undo - castle q-" + str(len(self.movementHistory)))
+            if self.tryMove(r1, c1, r2, c2, False):
+                moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                possibleMoves.append(moveNode)
+                if not self.undo():
+                    print("failed undo - castle q-" + str(len(self.movementHistory)))
 
 
 
 
-        return sorted(possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
+        return possibleMoves
+
+    def sortPossibleMoves(self):
+        self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
 
     def moveIfPossible(self, r1, c1, r2, c2):
         for m in self.possibleMoves:
@@ -496,7 +515,7 @@ class Game:
 
         (self.whiteMovements, self.blackMovements) = calculateMovements(self.board, self.castle_flags)
         #print("trying [" + str(r1) +"," + str(c1) +"->" + str(r2) +"," + str(c2) +"]" )
-        if validate and self.isKingUnderAttack(isWhitesTurn):
+        if self.isKingUnderAttack(isWhitesTurn):
             if not self.undo():
                 print("failed undo - under attack undo -" + str(len(self.movementHistory)))
             return False
@@ -599,6 +618,12 @@ class Game:
                 points += self.positionScore(r,c)
                 points += self.score_if_is_pawn(r,c)
 
+        for capture in self.whiteMovements.captures:
+            points += self.score_capture(capture)
+
+        for capture in self.blackMovements.captures:
+            points -= self.score_capture(capture)
+
         if self.isFinal():
             if self.isWhitesTurn():
                 points += self.scoreKingMoves(self.whiteMovements.kingValidMoves)
@@ -618,9 +643,8 @@ class Game:
 
     def bestMoveScoreAndDepth(self):
         if self.possibleMoves:
-            # after the moves in this level is done, sort the moves based on the score and return the best score
-            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
-            return self.possibleMoves[0].score, self.num_nodes_evaluated()
+            score = self.get_best_move_node().score
+            return score, self.num_nodes_evaluated()
         else:
             if self.isCheckMate():
                 sign = -1.0 if self.isWhitesTurn() else 1.0
@@ -633,24 +657,14 @@ class Game:
         return sum(node.nodesEvaluated for node in self.possibleMoves)
 
 
-    # no longer in use
-    def evaluateBestNode(self):
-        moveNode = self.possibleMoves[0]
-        self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
-
-        newScore, depth = self.bestMoveScoreAndDepth()
-        if not self.undo():
-            print("failed to undo xx", str(moveNode))
-            printBoard(self.board)
-        moveNode.score = newScore
-        moveNode.nodesEvaluated = moveNode.nodesEvaluated + 1
-        self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
+    def get_best_move_node(self):
+        return max(self.possibleMoves, key=lambda moveNode: moveNode.score) if self.isWhitesTurn() else min(self.possibleMoves, key=lambda moveNode: moveNode.score)
 
     def doBestMove(self, maxMovesArray):
         self.do_timed_evaluated_move_score(maxMovesArray)
         print("total time: ", self.get_evaluation_time(), " secs")
         if self.possibleMoves:
-            bestMoveNode = self.possibleMoves[0]
+            bestMoveNode = self.get_best_move_node()
             return self.move(bestMoveNode.r1, bestMoveNode.c1, bestMoveNode.r2, bestMoveNode.c2)
         return False
 
@@ -675,26 +689,33 @@ class Game:
 
     def do_timed_evaluated_move_score(self, maxMovesArray):
         self.evaluation_start_time = time.time()
-        self.evaluate_move_score(maxMovesArray, True)
+        self.evaluate_move_score(maxMovesArray, False)
         self.evaluation_end_time = time.time()
 
     def evaluate_until_time(self, maxTime):
         self.evaluation_start_time = time.time()
         self.evaluation_max_time = maxTime
 
+        maxMoves = 1000
+        maxMovesArray = []
 
-        evalCount = 0
-
-        self.evaluate_move_score([100,2,2,1,1,1,1], False)
-
+        bestMoves = self.possibleMoves.copy()
         while not self.evaluation_max_time_reached():
-            self.evaluate_move_score([1,4,3,3,1,1,1], False)
-            evalCount += 1
-            if self.evaluation_max_time_reached():
+            maxMovesArray.append(maxMoves)
+            self.evaluate_move_score(maxMovesArray, False)
+
+            if not self.evaluation_timed_out:
+                bestMoves = self.possibleMoves.copy()
+            else:
+                print("timeout" )
+                self.possibleMoves = bestMoves
+
+            self.sortPossibleMoves()
+            if self.evaluation_max_time_reached() or len(maxMovesArray) >=3:
                 break
 
         self.evaluation_end_time = time.time()
-        print("eval counts: " + str(evalCount))
+        print("eval depth: " + str(len(maxMovesArray)))
 
 
 
@@ -709,15 +730,39 @@ class Game:
     # for each possible move, update the score value by making a tree search
     # this method will execute moves and undo to update the scores
     def evaluateMoveScore(self, maxMoves, depth, stop_after_max_time=False):
-        if depth >= len(maxMoves) or (stop_after_max_time and self.evaluation_max_time_reached()):
+        self.evaluation_timed_out = stop_after_max_time and self.evaluation_max_time_reached()
+        if depth >= len(maxMoves) or self.evaluation_timed_out:
             return self.bestMoveScoreAndDepth()
         else:
             # it will perform a tree search just on the first moves
             movementsToCheck = min(maxMoves[depth], len(self.possibleMoves))
+
+            isWhiteTurn = self.isWhitesTurn()
+
+            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score,  reverse=isWhiteTurn)
+
+            #print("checking nMoves:" + str(movementsToCheck) + ", depth="+ str(depth) + "/"+str(len(maxMoves)) +" on board:")
+            #printBoard(self.board)
+
+            pruningScore = self.MAX_SCORE*-1 if isWhiteTurn else self.MAX_SCORE
             for moveNumber in range(0, movementsToCheck):
                 if (stop_after_max_time and self.evaluation_max_time_reached()):
+                    self.evaluation_timed_out = True
                     break
+                self.evaluation_timed_out = False
                 moveNode = self.possibleMoves[moveNumber]
+                #print("checking move(" + str(moveNumber) + "):" + str(moveNode) , self.isWhitesTurn(), " depth " ,depth)
+                # do alpha/beta pruning
+
+
+                pruningDelta = 0.5 if depth == 0 else 0.0
+                if isWhiteTurn:
+                    if moveNode.score+pruningDelta < pruningScore:
+                        break
+                else:
+                    if moveNode.score-pruningDelta > pruningScore:
+                        break
+
 
                 # this need to change to move without validation
                 #move_sucess = self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
@@ -727,6 +772,8 @@ class Game:
                 score, nodesEvaluated = self.evaluateMoveScore(maxMoves, depth + 1)
                 moveNode.score = score
                 moveNode.nodesEvaluated += nodesEvaluated
+
+                pruningScore = max(score, pruningScore) if isWhiteTurn else min(score, pruningScore)
 
 
                 if not self.undo():
@@ -746,6 +793,15 @@ class Game:
 
         return moveScore * self.pawn_move_score_factor
 
+    def score_capture(self, capture):
+        if capture.captured_piece.upper() == 'K':
+            return self.check_store
+        captor_score = self.pieceScoreMap[capture.captor_piece.upper()]
+        captured_score = self.pieceScoreMap[capture.captured_piece.upper()]
+        if not capture.captor_piece.upper().upper() == 'K' and captured_score > captor_score:
+            return self.capture_factor * (captured_score - captor_score)
+        else:
+            return 0.0
 
     def positionScore(self, row, col):
         squareValue = self.board[row][col]
@@ -771,6 +827,8 @@ class Game:
         else:
             return 1.0
 
+
+
     def scoreKingMoves(self, kingValidMoves):
         score = 0.0
         for kingMove in kingValidMoves:
@@ -787,13 +845,26 @@ class Game:
     def number_of_moves(self):
         return len(self.movementHistory)
 
+class Capture:
+    def __init__(self, captor_piece, captured_piece, r1, c1, r2, c2):
+        self.captor_piece = captor_piece
+        self.captured_piece = captured_piece
+        self.r1 = r1
+        self.c1 = c1
+        self.c1 = c2
+        self.r2 = r2
+
+
+
+
 class Movements:
-    def __init__(self, attacks, kingPosition, isKingUnderAttack, kingValidMoves, pawnMoves, canCastleKingSide, canCastleQueenSide):
+    def __init__(self, attacks, kingPosition, isKingUnderAttack, kingValidMoves, pawnMoves, captures, canCastleKingSide, canCastleQueenSide):
         self.attacks = attacks
         self.kingPosition = kingPosition
         self.isKingUnderAttack = isKingUnderAttack
         self.kingValidMoves = kingValidMoves
         self.pawnMoves = pawnMoves
+        self.captures = captures
         self.canCastleKingSide = canCastleKingSide
         self.canCastleQueenSide = canCastleQueenSide
 

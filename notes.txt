@@ -1,0 +1,85 @@
+Possible moves: R[0,6 -> 0,5](8.283/1), N[3,6 -> 5,7](6.238/1), Q[5,2 -> 1,2](6.145/1), Q[5,2 -> 3,0](6.028/1), Q[5,2 -> 4,3](5.614/1), Q[5,2 -> 5,3](5.564/1), Q[5,2 -> 3,4](5.504/1), N[3,6 -> 5,5](5.344/1), P[3,1 -> 2,1](5.29/1), N[3,6 -> 4,4](5.243/1), R[0,6 -> 2,6](5.223/1), N[3,6 -> 1,5](5.223/1), P[5,4 -> 4,4](5.209/1), Q[5,2 -> 6,3](5.203/1), K[7,6 -> 6,5](5.194/1), P[6,0 -> 4,0](5.187/1), P[6,1 -> 4,1](5.187/1), Q[5,2 -> 4,2](5.174/1), P[6,0 -> 5,0](5.172/1), P[6,1 -> 5,1](5.172/1), K[7,6 -> 7,5](5.163/1), K[7,6 -> 6,7](5.163/1), R[0,6 -> 0,7](5.163/1), Q[5,2 -> 6,2](5.153/1), N[3,6 -> 1,7](5.148/1), Q[5,2 -> 3,2](5.144/1), K[7,6 -> 7,7](5.143/1), R[0,6 -> 1,6](5.078/1), Q[5,2 -> 7,2](5.022/1), Q[5,2 -> 7,4](5.022/1), Q[5,2 -> 5,1](5.012/1), Q[5,2 -> 5,0](4.992/1), Q[5,2 -> 0,7](4.972/1), Q[5,2 -> 2,2](4.883/1), Q[5,2 -> 1,6](4.707/1), Q[5,2 -> 2,5](4.702/1), Q[5,2 -> 4,1](4.653/1),
+(5, 2) --- None
+(5, 2) --- (1, 2)
+     0     1    2    3   4     5   6     7
+   +----+----+----+----+----+----+----+----+
+ 0 | r  |    |    |    | k  | b  | R  |    |
+   +----+----+----+----+----+----+----+----+
+ 1 | n  |    | Q  |    | p  |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 2 |    |    |    |    | P  |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 3 | p  | P  |    |    |    | p  | N  | p  |
+   +----+----+----+----+----+----+----+----+
+ 4 |    |    |    |    |    |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 5 |    |    |    |    | P  |    |    | p  |
+   +----+----+----+----+----+----+----+----+
+ 6 | P  | P  |    |    |    |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 7 |    |    |    |    |    |    | K  |    |
+   +----+----+----+----+----+----+----+----+
+ is white? False
+ is white king under attack? False
+ is black king under attack? False
+ bestMove score: (4.8666, 10)
+ board score: 6.145
+last Move [no=63]: (Q5-2)(p1-2)
+state: r3kbR1-n1Q1p3-4P3-pP3pNp-8-4P2p-PP6-6K1-0100
+previous States: {'rnbqkbnr-pppppppp-8-8-4P3-8-PPPP1PPP-RNBQKBNR-1111': 1, 'rnbqkbnr-ppp1pppp-8-3p4-4P3-8-PPPP1PPP-RNBQKBNR-1111': 1, 'rnbqkbnr-ppp1pppp-8-3P4-8-8-PPPP1PPP-RNBQKBNR-1111': 1, 'rnb1kbnr-ppp1pppp-8-3q4-8-8-PPPP1PPP-RNBQKBNR-1111': 1, 'rnb1kbnr-ppp1pppp-8-3q4-8-2N5-PPPP1PPP-R1BQKBNR-1111': 1, 'rnb1kbnr-ppp1pppp-8-5q2-8-2N5-PPPP1PPP-R1BQKBNR-1111': 1, 'rnb1kbnr-ppp1pppp-8-5q2-8-2N2N2-PPPP1PPP-R1BQKB1R-1111': 1, 'rnb1kbnr-ppp1pppp-8-8-5q2-2N2N2-PPPP1PPP-R1BQKB1R-1111': 1, 'rnb1kbnr-ppp1pppp-8-8-5q2-2NP1N2-PPP2PPP-R1BQKB1R-1111': 1, 'rnb1kbnr-ppp1pppp-3q4-8-8-2NP1N2-PPP2PPP-R1BQKB1R-1111': 1, 'rnb1kbnr-ppp1pppp-3q4-8-8-2NPBN2-PPP2PPP-R2QKB1R-1111': 1, 'rn2kbnr-ppp1pppp-3q4-5b2-8-2NPBN2-PPP2PPP-R2QKB1R-1111': 1, 'rn2kbnr-ppp1pppp-3q4-5b2-8-2NPBN2-PPP1BPPP-R2QK2R-1111': 1, 'rn2kbnr-1pp1pppp-3q4-p4b2-8-2NPBN2-PPP1BPPP-R2QK2R-1111': 1, 'rn2kbnr-1pp1pppp-3q4-p4b2-8-2NPBN2-PPP1BPPP-R2Q1RK1-1111': 1, 'r3kbnr-1pp1pppp-2nq4-p4b2-8-2NPBN2-PPP1BPPP-R2Q1RK1-1100': 1, 'r3kbnr-1pp1pppp-2nq4-p4b2-8-2NPBN2-PPPQBPPP-R4RK1-1100': 1, 'r3kbnr-1pp1ppp1-2nq4-p4b1p-8-2NPBN2-PPPQBPPP-R4RK1-1100': 1, 'r3kbnr-1pp1ppp1-2nq4-p4b1p-7N-2NPB3-PPPQBPPP-R4RK1-1100': 1, 'r3kbnr-1pp1ppp1-2nqb3-p6p-7N-2NPB3-PPPQBPPP-R4RK1-1100': 1, 'r3kbnr-1pp1ppp1-2nqb3-p6p-7N-2NPBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkbnr-1pp1ppp1-3qb3-p6p-7N-2NPBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkbnr-1pp1ppp1-3qb3-p6p-4N2N-3PBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkbnr-1pp1ppp1-4b3-p2q3p-4N2N-3PBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkbnr-1pp1ppp1-4bN2-p2q3p-7N-3PBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4bn2-p2q3p-7N-3PBB2-PPPQ1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4bn2-p2B3p-7N-3PB3-PPPQ1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p2n3p-7N-3PB3-PPPQ1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p2n3p-2P4N-3PB3-PP1Q1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4bn2-p6p-2P4N-3PB3-PP1Q1PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4bn2-p6p-2P4N-2QPB3-PP3PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p6p-2P3nN-2QPB3-PP3PPP-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p6p-2P3nN-2QPB2P-PP3PP1-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p6p-2P4N-2QPn2P-PP3PP1-R4RK1-1100': 1, 'r2nkb1r-1pp1ppp1-4b3-p6p-2P4N-2QPP2P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1ppp1-2n1b3-p6p-2P4N-2QPP2P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1ppp1-2n1b3-p6p-2PP3N-2Q1P2P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p5pp-2PP3N-2Q1P2P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p5pp-2PP4-2Q1PN1P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p6p-2PP2p1-2Q1PN1P-PP4P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p6p-2PP2p1-2Q1P2P-PP1N2P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p6p-2PP4-2Q1P2p-PP1N2P1-R4RK1-1100': 1, 'r3kb1r-1pp1pp2-2n1b3-p2P3p-2P5-2Q1P2p-PP1N2P1-R4RK1-1100': 1, 'r3kbr1-1pp1pp2-2n1b3-p2P3p-2P5-2Q1P2p-PP1N2P1-R4RK1-1100': 1, 'r3kbr1-1pp1pp2-2n1P3-p6p-2P5-2Q1P2p-PP1N2P1-R4RK1-0100': 1, 'r3kb2-1pp1pp2-2n1P3-p6p-2P5-2Q1P2p-PP1N2r1-R4RK1-0100': 1, 'r3kb2-1pp1pp2-2n1P3-p6p-2P5-2Q1P2p-PP1N2r1-R4R1K-0100': 1, 'r3kb2-1pp1p3-2n1Pp2-p6p-2P5-2Q1P2p-PP1N2r1-R4R1K-0100': 1, 'r3kb2-1pp1p3-2n1Pp2-p6p-2P5-2Q1P2p-PP1N2r1-R5RK-0100': 1, 'r3kb2-1pp1p3-2n1Pp2-p6p-2P5-2Q1P2p-PP1N1r2-R5RK-0100': 1, 'r3kb2-1pp1p3-2n1Pp2-p6p-2P1N3-2Q1P2p-PP3r2-R5RK-0100': 1, 'r3kb2-1pp1p3-2n1Pp2-p6p-2P1N3-2Q1Pr1p-PP6-R5RK-0100': 1, 'r3kbR1-1pp1p3-2n1Pp2-p6p-2P1N3-2Q1Pr1p-PP6-R6K-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4p1p-2P1N3-2Q1Pr1p-PP6-R6K-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4pNp-2P5-2Q1Pr1p-PP6-R6K-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4pNp-2P5-2Q1P1rp-PP6-R6K-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4pNp-2P5-2Q1P1rp-PP6-6RK-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4pNp-2P5-2Q1P2p-PP6-6rK-0100': 1, 'r3kbR1-1pp1p3-2n1P3-p4pNp-2P5-2Q1P2p-PP6-6K1-0100': 1, 'r3kbR1-2p1p3-2n1P3-pp3pNp-2P5-2Q1P2p-PP6-6K1-0100': 1, 'r3kbR1-2p1p3-2n1P3-pP3pNp-8-2Q1P2p-PP6-6K1-0100': 1, 'r3kbR1-n1p1p3-4P3-pP3pNp-8-2Q1P2p-PP6-6K1-0100': 1, 'r3kbR1-n1Q1p3-4P3-pP3pNp-8-4P2p-PP6-6K1-0100': 1}
+eval time: 2.126338243484497 secs
+castle Flags: {'black_king_side': False, 'black_queen_side': True, 'white_king_side': False, 'white_queen_side': False}
+Possible moves: n[1,0 -> 3,1](4.867/1), r[0,0 -> 0,2](6.085/1), r[0,0 -> 0,3](6.224/1), n[1,0 -> 2,2](6.234/1), p[3,5 -> 4,5](6.244/1), p[3,7 -> 4,7](6.264/1), p[3,0 -> 4,0](6.264/1), r[0,0 -> 0,1](6.265/1), p[5,7 -> 6,7](6.272/1), n[1,0 -> 0,2](6.275/1),
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/tkinter/__init__.py", line 1883, in __call__
+    return self.func(*args)
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/tkinter/__init__.py", line 804, in callit
+    func(*args)
+  File "/Users/Guilherme/PycharmProjects/chessProject/drawfunctions.py", line 64, in tryComputerMove
+    doComputerMove()
+  File "/Users/Guilherme/PycharmProjects/chessProject/drawfunctions.py", line 73, in doComputerMove
+    game.do_best_move(10)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 672, in do_best_move
+    self.evaluate_until_time(max_time)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 705, in evaluate_until_time
+    self.evaluate_move_score(maxMovesArray, False)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 727, in evaluate_move_score
+    self.evaluateMoveScore(maxMovesArray, 0, stop_after_max_time)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 772, in evaluateMoveScore
+    score, nodesEvaluated = self.evaluateMoveScore(maxMoves, depth + 1)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 772, in evaluateMoveScore
+    score, nodesEvaluated = self.evaluateMoveScore(maxMoves, depth + 1)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 769, in evaluateMoveScore
+    move_sucess = self.doValidatedMove(moveNode)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 462, in doValidatedMove
+    self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2, False)
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 453, in move
+    self.calculateMoves()
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 341, in calculateMoves
+    self.possibleMoves = self.generatePossibleMoves()
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 389, in generatePossibleMoves
+    if self.tryMove(r1, c1, r2, c2):
+  File "/Users/Guilherme/PycharmProjects/chessProject/chess.py", line 516, in tryMove
+    (self.whiteMovements, self.blackMovements) = calculateMovements(self.board, self.castle_flags)
+TypeError: cannot unpack non-iterable NoneType object
+Error calc moves for the board
+     0     1    2    3   4     5   6     7
+   +----+----+----+----+----+----+----+----+
+ 0 | r  | Q  |    |    |    | b  | R  |    |
+   +----+----+----+----+----+----+----+----+
+ 1 |    |    |    |    | p  |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 2 |    |    |    |    | P  |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 3 | p  | n  |    |    |    | p  | N  | p  |
+   +----+----+----+----+----+----+----+----+
+ 4 |    |    |    |    |    |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 5 |    |    |    |    | P  |    |    | p  |
+   +----+----+----+----+----+----+----+----+
+ 6 | P  | P  |    |    |    |    |    |    |
+   +----+----+----+----+----+----+----+----+
+ 7 |    |    |    |    |    |    | K  |    |
+
+ Where is the KING ??????

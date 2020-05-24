@@ -49,6 +49,7 @@ def play():
     canvas.update()
     canvas.after(50, doComputerMove)
 
+
 def autoPlay():
     global originClick, destClick, game, square_width, images, root, ComputerIsMoving
     while not IsGameEnd:
@@ -184,6 +185,14 @@ autoPlayBtn = tk.Button(frame,
                    bg="blue",
                    bd=10,
                    command=autoPlay)
+autoPlayBtn.pack(side=tk.LEFT)
+
+autoPlayBtn = tk.Button(frame,
+                   text="Play Move",
+                   fg="black",
+                   bg="blue",
+                   bd=10,
+                   command=play)
 autoPlayBtn.pack(side=tk.LEFT)
 
 

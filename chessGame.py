@@ -25,11 +25,32 @@ Board= [
     ['P', 'P', 'P', 'B', 'Q', 'P', 'B', 'P'],
     ['R', ' ', ' ', ' ', ' ', 'R', 'K', ' ']];
 
+Board= [
+    ['r', 'n', 'b', ' ', 'k', ' ', 'n', 'r'],
+    ['p', 'p', 'p', 'p', ' ', 'p', 'p', 'p'],
+    [' ', ' ', ' ', 'b', 'p', 'q', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'P', 'P', 'P', ' ', ' '],
+    [' ', ' ', 'P', ' ', ' ', ' ', 'P', ' '],
+    ['P', 'P', ' ', ' ', ' ', ' ', ' ', 'P'],
+    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']];
+
+Board= [
+    ['r', ' ', ' ', ' ', 'k', 'b', 'R', ' '],
+    [' ', ' ', 'Q', ' ', 'p', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', 'p', ' ', ' ', ' '],
+    ['P', 'n', ' ', ' ', ' ', 'p', 'N', 'p'],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', 'P', ' ', ' ', 'p'],
+    ['P', 'P', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', 'K', ' ']];
+
 
 
 
 #Board=KING_AND_ROOKS_POSITION
-IsWhiteTurn=False
+#Board=INITIAL_POSITION
+IsWhiteTurn=True
 
 
 
@@ -63,6 +84,7 @@ while  move != "exit":
 
             start = time.time()
             game.do_timed_evaluated_move_score(maxMoveArray)
+            game.sortPossibleMoves()
             end = time.time()
             print(" evaluating time " + str(end-start) + " secs !")
         else:
@@ -84,6 +106,7 @@ while  move != "exit":
         c1 = int(tokens[1])
         r2 = int(tokens[2])
         c2 = int(tokens[3])
-        game.move(r1, c1, r2, c2)
+        if not game.move(r1, c1, r2, c2):
+            print("move is INVALID!! ")
 
 
