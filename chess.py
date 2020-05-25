@@ -724,18 +724,18 @@ class Game:
         self.evaluation_max_time = maxTime
 
         self.sortPossibleMoves()
-        pruningDelta = 0.1;
+        pruningDelta = 1.0;
 
         depth = 3
         MAX_DEPTH = 3
         while not self.evaluation_max_time_reached():
             searchParams = []
             for d in range(0, min(depth, MAX_DEPTH)):
-                delta = max(0.0, pruningDelta - d*0.4)
+                delta = max(0.0, pruningDelta - d*0.5)
                 searchParams.append((1000, delta))
 
             print("evaluating depth: ", len(searchParams), ", pruningDelta: ", pruningDelta, " all params: ", searchParams)
-            self.evaluate_move_score(searchParams, False)
+            self.evaluate_move_score(searchParams, True)
             depth += 1
             if depth >= MAX_DEPTH:
                 pruningDelta += 0.1
@@ -808,7 +808,7 @@ class Game:
 
                 # update the move score
                 score, nodesEvaluated = self.evaluateMoveScore(searchParams, depth + 1)
-                moveNode.calculate_snapshot_core = score
+                moveNode.score = score
                 moveNode.nodesEvaluated += nodesEvaluated
                 moveNode.evaluation_completed = not self.evaluation_timed_out
                 pruningScore = max(score, pruningScore) if isWhiteTurn else min(score, pruningScore)
