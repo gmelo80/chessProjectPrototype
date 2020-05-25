@@ -1,16 +1,16 @@
 
 def printBoard(board):
-    print("     0     1    2    3   4     5   6     7  ")
+
     print("   +----+----+----+----+----+----+----+----+")
 
     for row in range (0, 8):
-        print(" " + str(row), end=" ")
+        print(" " + str((8-row)), end=" ")
         for col in range (0, 8):
             squareVal = board[row][col]
             print("| " + squareVal, end="  ")
         print("|")
         print("   +----+----+----+----+----+----+----+----+")
-
+    print("     a     b    c    d   e     f   g     h  ")
 
 
 
@@ -36,13 +36,22 @@ def printAttacks(attackMoves, piece):
 
 def printPossibleMoves(game):
     movements = ""
+    count = 0
     for possibleMove in game.possibleMoves:
+        count += 1
         movements = movements + moveAsString(possibleMove, game.board) + ", "
+        if count % 14 == 0:
+            movements = movements + "\n"
     print("Possible moves: " + movements)
 
+    eval_moves  = [m for m in game.possibleMoves if m.evaluation_completed]
+    movements = ""
+    for move_eval in eval_moves:
+        movements = movements + moveAsString(move_eval, game.board) + ", "
+    print("moves evaluated: " + movements)
+
 def moveAsString(move, board):
-    origin=board[move.r1][move.c1]
-    return origin + str(move)
+    return  str(move)
 
 def printGame(game):
     game.sortPossibleMoves()
@@ -52,7 +61,7 @@ def printGame(game):
     print(" is white king under attack? " + str(game.whiteMovements.isKingUnderAttack))
     print(" is black king under attack? " + str(game.blackMovements.isKingUnderAttack))
     print(" bestMove score: " + str(game.bestMoveScoreAndDepth()))
-    print(" board score: " + str(round(game.score(), 3)))
+    print(" board score: " + str(round(game.calculate_snapshot_core(), 3)))
     print("last Move [no=" + str(game.number_of_moves()) + "]: " + game.lastMoveStr())
     print("state: " + game.state())
     print("previous States: " + str(game.previousPositions))

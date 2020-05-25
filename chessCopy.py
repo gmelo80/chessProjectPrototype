@@ -184,7 +184,7 @@ class Game:
                         possibleMoves.append(moveNode)
                         self.undo()
 
-        return sorted(possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
+        return sorted(possibleMoves, key=lambda moveNode : moveNode.calculate_snapshot_core, reverse=self.isWhitesTurn())
 
 
 

@@ -36,14 +36,14 @@ Board= [
     ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']];
 
 Board= [
-    ['r', ' ', ' ', ' ', 'k', 'b', 'R', ' '],
-    [' ', ' ', 'Q', ' ', 'p', ' ', ' ', ' '],
+    ['r', ' ', 'b', 'q', 'k', ' ', 'n', 'r'],
+    ['p', 'p', 'p', 'p', ' ', 'p', 'p', 'p'],
+    [' ', ' ', 'n', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', 'p', ' ', ' ', ' '],
-    ['P', 'n', ' ', ' ', ' ', 'p', 'N', 'p'],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', 'P', ' ', ' ', 'p'],
-    ['P', 'P', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', 'K', ' ']];
+    [' ', 'b', 'B', ' ', 'P', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', 'Q', ' ', ' '],
+    ['P', ' ', 'P', 'P', ' ', 'P', 'P', 'P'],
+    ['R', 'N', 'B', ' ', 'K', ' ', 'N', 'R']];
 
 
 
@@ -80,7 +80,8 @@ while  move != "exit":
 
             maxMoveArray = []
             for t in tokens:
-                maxMoveArray.append(int(t))
+                param = (int(t.split("/")[0]), float(t.split("/")[1]))
+                maxMoveArray.append(param)
 
             start = time.time()
             game.do_timed_evaluated_move_score(maxMoveArray)

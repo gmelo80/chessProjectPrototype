@@ -278,7 +278,7 @@ class Game:
                         possibleMoves.append(moveNode)
                         self.undo()
 
-        return sorted(possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
+        return sorted(possibleMoves, key=lambda moveNode : moveNode.calculate_snapshot_core, reverse=self.isWhitesTurn())
 
 
 
@@ -419,7 +419,7 @@ class Game:
 
     def bestMoveScoreAndDepth(self):
         if self.possibleMoves:
-            return self.possibleMoves[0].score, self.possibleMoves[0].nodesEvaluated
+            return self.possibleMoves[0].calculate_snapshot_core, self.possibleMoves[0].nodesEvaluated
         else:
             if self.isCheckMate():
                 sign = -1.0 if self.isWhitesTurn() else 1.0
@@ -435,9 +435,9 @@ class Game:
 
         newScore, depth = self.bestMoveScoreAndDepth()
         self.undo()
-        moveNode.score = newScore
+        moveNode.calculate_snapshot_core = newScore
         moveNode.nodesEvaluated = moveNode.nodesEvaluated + 1
-        self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode : moveNode.score, reverse=self.isWhitesTurn())
+        self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode : moveNode.calculate_snapshot_core, reverse=self.isWhitesTurn())
 
     def doBestMove(self, maxMoves, depth):
         self.evaluateMoveScore(maxMoves, depth)
@@ -457,13 +457,13 @@ class Game:
                 self.move(moveNode.r1, moveNode.c1, moveNode.r2, moveNode.c2)
 
                 newMaxMoves = max(1, maxMoves/4)
-                moveNode.score = self.evaluateMoveScore(maxMoves, depth-1)
+                moveNode.calculate_snapshot_core = self.evaluateMoveScore(maxMoves, depth - 1)
                 moveNode.nodesEvaluated = depth
                 self.undo()
 
             #print(" after eval " + str(depth))
             #printPossibleMoves(self)
-            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
+            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.calculate_snapshot_core, reverse=self.isWhitesTurn())
             newScore, depth = self.bestMoveScoreAndDepth()
             return newScore
 

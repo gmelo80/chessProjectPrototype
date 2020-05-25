@@ -242,20 +242,30 @@ def rowAsStr(boardRow):
 
 
 class MoveNode:
-    def __init__(self, r1, c1, r2, c2, score, nodesEvaluated=1):
+    def __init__(self, r1, c1, r2, c2, score, piece, evaluation_completed=False, nodesEvaluated=1):
         self.r1 = r1
         self.c1 = c1
         self.r2 = r2
         self.c2 = c2
         self.score = score
+        self.evaluation_completed = evaluation_completed
+        self.piece = piece
         self.nodesEvaluated = nodesEvaluated
+
+
 
     def is_same(self, node):
         return self.c1== node.c1 and self.c2 == node.c2 and self.r1== node.r1 and self.r2 == node.r2;
 
 
     def __str__(self):
-        return "[" + str(self.r1) +"," + str(self.c1) +" -> " + str(self.r2) +"," + str(self.c2) +"](" + str(round(self.score,3)) +"/" + str(self.nodesEvaluated) + ")"
+        prefix = "";
+        if self.piece.upper() != 'P':
+            prefix = self.piece
+            if self.piece.upper() == 'N' or self.piece.upper() == 'R':
+                prefix = prefix + str(chr(97+self.c1)) + str(8-self.r1)
+
+        return prefix + str(chr(97+self.c2))+ str(8-self.r2) +"(" + str(round(self.score,3)) +"/" + str(self.evaluation_completed) + "/" + str(self.nodesEvaluated) +")"
 
 class SquarePositionValue:
     def __init__(self, value, row, col):
@@ -386,8 +396,9 @@ class Game:
                 for attack in attackMoves[r2][c2]:
                     r1 = attack[1]
                     c1 = attack[2]
+                    piece = self.board[r1][c1]
                     if self.tryMove(r1, c1, r2, c2):
-                        moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                        moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
                         possibleMoves.append(moveNode)
                         if not self.undo():
                             print("failed undo - 1 -" + str(len(self.movementHistory)))
@@ -397,8 +408,9 @@ class Game:
             c1 = pawnMove[1]
             r2 = pawnMove[2]
             c2 = pawnMove[3]
+            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2):
-                moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - 2 -" + str(len(self.movementHistory)))
@@ -409,16 +421,18 @@ class Game:
 
         if self.can_castle_king_side():
             c2 = c1 + 2
+            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2, False):
-                moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - castle k -" + str(len(self.movementHistory)))
 
         if self.can_castle_queen_side():
-            c2 = c1 - 3
+            c2 = c1 - 2
+            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2, False):
-                moveNode = MoveNode(r1, c1, r2, c2, self.score())
+                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - castle q-" + str(len(self.movementHistory)))
@@ -489,10 +503,10 @@ class Game:
                 self.board[r1][5] = self.board[r1][7]
                 self.board[r1][7] = ' '
                 saved_positions += [SquarePositionValue(self.board[r1][5] , r1, 7), SquarePositionValue(' ', r1, 5)]
-            if c2 == 1:
-                self.board[r1][2] = self.board[r1][0]
+            if c2 == 2:
+                self.board[r1][3] = self.board[r1][0]
                 self.board[r1][0] = ' '
-                saved_positions += [SquarePositionValue(self.board[r1][2] , r1, 0) , SquarePositionValue(' ', r1, 2)]
+                saved_positions += [SquarePositionValue(self.board[r1][3] , r1, 0) , SquarePositionValue(' ', r1, 3)]
 
         historyState = HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
 
@@ -608,9 +622,14 @@ class Game:
 
 
 
-    def score(self):
+    def calculate_snapshot_core(self):
         if self.is_draw_by_repetion():
-            return 0.0
+             return 0.0
+        #if self.is_draw():
+        #   return 0.0
+        #
+       # if self.isCheckMate():
+       #     return -self.MAX_SCORE if self.isWhitesTurn() else self.MAX_SCORE;
 
         points = 0.0
         for r in range(0,8):
@@ -630,6 +649,9 @@ class Game:
             else:
                 points -= self.scoreKingMoves(self.blackMovements.kingValidMoves)
         return points
+
+    def is_draw(self):
+        return self.is_draw_by_repetion() or self.isStaleMate()
 
     def isCheckMate(self):
         return not self.possibleMoves and self.isKingUnderAttack(self.isWhitesTurn())
@@ -673,7 +695,11 @@ class Game:
         print("GAME after evaluated:: ==========")
         printGame(self)
         if self.possibleMoves:
-            bestMoveNode = self.possibleMoves[0]
+            eval_moves = [m for m in self.possibleMoves if m.evaluation_completed]
+            if eval_moves:
+                bestMoveNode = eval_moves[0]
+            else:
+                bestMoveNode = self.possibleMoves[0]
             return self.move(bestMoveNode.r1, bestMoveNode.c1, bestMoveNode.r2, bestMoveNode.c2)
         return False
 
@@ -687,35 +713,46 @@ class Game:
     def get_current_evaluation_time(self):
         return time.time() - self.evaluation_start_time;
 
-    def do_timed_evaluated_move_score(self, maxMovesArray):
+    def do_timed_evaluated_move_score(self, searchParams):
         self.evaluation_start_time = time.time()
-        self.evaluate_move_score(maxMovesArray, False)
+        self.evaluate_move_score(searchParams, False)
         self.evaluation_end_time = time.time()
 
+    # main function - entry point here
     def evaluate_until_time(self, maxTime):
         self.evaluation_start_time = time.time()
         self.evaluation_max_time = maxTime
 
-        maxMoves = 1000
-        maxMovesArray = []
+        self.sortPossibleMoves()
+        pruningDelta = 0.1;
 
-        bestMoves = self.possibleMoves.copy()
+        depth = 3
+        MAX_DEPTH = 3
         while not self.evaluation_max_time_reached():
-            maxMovesArray.append(maxMoves)
-            self.evaluate_move_score(maxMovesArray, False)
+            searchParams = []
+            for d in range(0, min(depth, MAX_DEPTH)):
+                delta = max(0.0, pruningDelta - d*0.4)
+                searchParams.append((1000, delta))
 
-            if not self.evaluation_timed_out:
-                bestMoves = self.possibleMoves.copy()
-            else:
-                print("timeout" )
-                self.possibleMoves = bestMoves
+            print("evaluating depth: ", len(searchParams), ", pruningDelta: ", pruningDelta, " all params: ", searchParams)
+            self.evaluate_move_score(searchParams, False)
+            depth += 1
+            if depth >= MAX_DEPTH:
+                pruningDelta += 0.1
 
-            self.sortPossibleMoves()
-            if self.evaluation_max_time_reached() or len(maxMovesArray) >=3:
+
+            print("evaluating time: ", self.get_evaluation_time())
+            if self.evaluation_max_time_reached():
+                print("timeout")
                 break
+            else:
+                self.sortPossibleMoves()
+                print("there is still time left, continuing evaluation. Best moves so far:")
+                printPossibleMoves(self)
+
 
         self.evaluation_end_time = time.time()
-        print("eval depth: " + str(len(maxMovesArray)))
+        print("eval depth: " + str(len(searchParams)))
 
 
 
@@ -723,25 +760,26 @@ class Game:
         return self.get_current_evaluation_time() >= self.evaluation_max_time;
 
 
-    def evaluate_move_score(self, maxMovesArray, stop_after_max_time=False):
-        self.evaluateMoveScore(maxMovesArray, 0, stop_after_max_time)
+    def evaluate_move_score(self, searchParams, stop_after_max_time=False):
+        self.evaluateMoveScore(searchParams, 0, stop_after_max_time)
 
 
     # for each possible move, update the score value by making a tree search
     # this method will execute moves and undo to update the scores
-    def evaluateMoveScore(self, maxMoves, depth, stop_after_max_time=False):
+    def evaluateMoveScore(self, searchParams, depth, stop_after_max_time=False):
         self.evaluation_timed_out = stop_after_max_time and self.evaluation_max_time_reached()
-        if depth >= len(maxMoves) or self.evaluation_timed_out:
+        if depth >= len(searchParams):
             return self.bestMoveScoreAndDepth()
         else:
             # it will perform a tree search just on the first moves
-            movementsToCheck = min(maxMoves[depth], len(self.possibleMoves))
+            maxMoves, pruningDelta = searchParams[depth]
+            movementsToCheck = min(maxMoves, len(self.possibleMoves))
 
             isWhiteTurn = self.isWhitesTurn()
 
-            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score,  reverse=isWhiteTurn)
+            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=isWhiteTurn)
 
-            #print("checking nMoves:" + str(movementsToCheck) + ", depth="+ str(depth) + "/"+str(len(maxMoves)) +" on board:")
+            #print("checking nMoves:" + str(movementsToCheck) + ", depth="+ str(depth) + "/"+str(len(searchParams)) +" on board:")
             #printBoard(self.board)
 
             pruningScore = self.MAX_SCORE*-1 if isWhiteTurn else self.MAX_SCORE
@@ -755,7 +793,7 @@ class Game:
                 # do alpha/beta pruning
 
 
-                pruningDelta = 0.5 if depth == 0 else 0.0
+                # if the next move is not better than pruningDelta _
                 if isWhiteTurn:
                     if moveNode.score+pruningDelta < pruningScore:
                         break
@@ -769,10 +807,10 @@ class Game:
                 move_sucess = self.doValidatedMove(moveNode)
 
                 # update the move score
-                score, nodesEvaluated = self.evaluateMoveScore(maxMoves, depth + 1)
-                moveNode.score = score
+                score, nodesEvaluated = self.evaluateMoveScore(searchParams, depth + 1)
+                moveNode.calculate_snapshot_core = score
                 moveNode.nodesEvaluated += nodesEvaluated
-
+                moveNode.evaluation_completed = not self.evaluation_timed_out
                 pruningScore = max(score, pruningScore) if isWhiteTurn else min(score, pruningScore)
 
 
