@@ -70,7 +70,9 @@ def doComputerMove():
     destClick = None
     originClick = None
     #game.doBestMove(30, 6)
-    game.do_best_move(10)
+    timeEval = evalTimeBtn.get()
+    print("evaluating for " + str(timeEval) + " seconds")
+    game.do_best_move(int(timeEval))
     drawGame(canvas, game, square_width, images)
     printGame(game)
     ComputerIsMoving = False
@@ -195,5 +197,10 @@ autoPlayBtn = tk.Button(frame,
                    command=play)
 autoPlayBtn.pack(side=tk.LEFT)
 
+var = StringVar(root)
+var.set("5")
+evalTimeBtn = Spinbox(frame, from_=1, to=10, textvariable=var)
+
+evalTimeBtn.pack()
 
 root.mainloop()

@@ -242,11 +242,12 @@ def rowAsStr(boardRow):
 
 
 class MoveNode:
-    def __init__(self, r1, c1, r2, c2, score, piece, evaluation_completed=False, nodesEvaluated=1):
+    def __init__(self, r1, c1, r2, c2, rank, score, piece, evaluation_completed=False, nodesEvaluated=1):
         self.r1 = r1
         self.c1 = c1
         self.r2 = r2
         self.c2 = c2
+        self.rank = rank
         self.score = score
         self.evaluation_completed = evaluation_completed
         self.piece = piece
@@ -396,9 +397,8 @@ class Game:
                 for attack in attackMoves[r2][c2]:
                     r1 = attack[1]
                     c1 = attack[2]
-                    piece = self.board[r1][c1]
                     if self.tryMove(r1, c1, r2, c2):
-                        moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
+                        moveNode = self.createMoveNode(r1, c1, r2, c2)
                         possibleMoves.append(moveNode)
                         if not self.undo():
                             print("failed undo - 1 -" + str(len(self.movementHistory)))
@@ -408,9 +408,8 @@ class Game:
             c1 = pawnMove[1]
             r2 = pawnMove[2]
             c2 = pawnMove[3]
-            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2):
-                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
+                moveNode = self.createMoveNode(r1, c1, r2, c2)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - 2 -" + str(len(self.movementHistory)))
@@ -421,26 +420,29 @@ class Game:
 
         if self.can_castle_king_side():
             c2 = c1 + 2
-            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2, False):
-                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
+                moveNode = self.createMoveNode(r1, c1, r2, c2)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - castle k -" + str(len(self.movementHistory)))
 
         if self.can_castle_queen_side():
             c2 = c1 - 2
-            piece = self.board[r1][c1]
             if self.tryMove(r1, c1, r2, c2, False):
-                moveNode = MoveNode(r1, c1, r2, c2, self.calculate_snapshot_core(), piece)
+                moveNode = self.createMoveNode(r1, c1, r2, c2)
                 possibleMoves.append(moveNode)
                 if not self.undo():
                     print("failed undo - castle q-" + str(len(self.movementHistory)))
 
 
-
-
         return possibleMoves
+
+    def createMoveNode(self, r1, c1, r2, c2):
+        piece = self.board[r1][c1]
+        score = self.calculate_snapshot_core()
+        rank = score
+        return MoveNode(r1, c1, r2, c2, rank, score, piece)
+
 
     def sortPossibleMoves(self):
         self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
