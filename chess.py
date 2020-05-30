@@ -241,8 +241,18 @@ def rowAsStr(boardRow):
     return rowStr
 
 
+PIECE_SCORE_MAP = {
+    " ": 0,
+    "K": 0,
+    "R": 5,
+    "N": 3,
+    "B": 3.1,
+    "Q": 9,
+    "P": 1
+}
+
 class MoveNode:
-    def __init__(self, r1, c1, r2, c2, rank, score, piece, evaluation_completed=False, nodesEvaluated=1):
+    def __init__(self, r1, c1, r2, c2, rank, score, piece, captured_piece, evaluation_completed=False, nodesEvaluated=1):
         self.r1 = r1
         self.c1 = c1
         self.r2 = r2
@@ -252,11 +262,14 @@ class MoveNode:
         self.evaluation_completed = evaluation_completed
         self.piece = piece
         self.nodesEvaluated = nodesEvaluated
+        self.captured_piece = captured_piece;
 
 
 
     def is_same(self, node):
         return self.c1== node.c1 and self.c2 == node.c2 and self.r1== node.r1 and self.r2 == node.r2;
+
+
 
 
     def __str__(self):
@@ -266,7 +279,7 @@ class MoveNode:
             if self.piece.upper() == 'N' or self.piece.upper() == 'R':
                 prefix = prefix + str(chr(97+self.c1)) + str(8-self.r1)
 
-        return prefix + str(chr(97+self.c2))+ str(8-self.r2) +"(" + str(round(self.score,3)) +"/" + str(self.evaluation_completed) + "/" + str(self.nodesEvaluated) +")"
+        return prefix + str(chr(97+self.c2))+ str(8-self.r2) +"(" + str(round(self.rank,3)) +"/" + str(round(self.score,3)) +"/" + str(self.evaluation_completed) + "/" + str(self.nodesEvaluated) +")"
 
 class SquarePositionValue:
     def __init__(self, value, row, col):
@@ -278,12 +291,19 @@ class SquarePositionValue:
         return "(" + self.value+str(self.row) +"-"+str(self.col)+")"
 
 class HistoryState:
-    def __init__(self, square_pos_value_list, white_movements, black_movements, possible_moves, castle_flags):
+    def __init__(self, square_pos_value_list, piece, captured_piece, r1, c1, r2, c2, white_movements, black_movements, possible_moves, castle_flags):
+        self.piece = piece
+        self.captured_piece = captured_piece
+        self.r1 = r1
+        self.c1 = c1
+        self.r2 = r2
+        self.c2 = c2
         self.square_pos_value_list = square_pos_value_list
         self.white_movements = white_movements
         self.black_movements = black_movements
         self.possible_moves = possible_moves
         self.castle_flags = castle_flags
+
     def __str__(self):
         val = ""
         for s in self.square_pos_value_list:
@@ -438,14 +458,48 @@ class Game:
         return possibleMoves
 
     def createMoveNode(self, r1, c1, r2, c2):
-        piece = self.board[r1][c1]
-        score = self.calculate_snapshot_core()
-        rank = score
-        return MoveNode(r1, c1, r2, c2, rank, score, piece)
 
+        score = self.calculate_snapshot_core()
+
+        rank = score
+
+        sign = -1 if self.isWhitesTurn() else 1;
+        extra = 0.0
+
+        self.whiteMovements
+
+        if self.isCheck():
+            extra += 1000
+
+        lastMove = self.getLastMove()
+        if lastMove:
+            piece = lastMove.piece
+            captured_piece = lastMove.captured_piece
+            attacks =  self.whiteMovements.attacks if self.isWhitesTurn() else self.blackMovements.attacks
+            is_captured_defended = True if attacks[r2][c2] else False
+            extra += 10 * self.capture_score(piece, captured_piece, is_captured_defended)
+
+        if self.is_castle(piece, c1, c2):
+            extra += 10
+
+        rank += sign * extra
+
+        return MoveNode(r1, c1, r2, c2, rank, score, piece, captured_piece)
+
+    def is_castle(self, piece, c1, c2):
+        return piece.upper() == 'K' and abs(c1 - c2) == 2
+
+    def capture_score(self, piece, captured_piece, is_captured_defended):
+        c_score = PIECE_SCORE_MAP.get(captured_piece.upper())
+        if is_captured_defended:
+            c_score -= PIECE_SCORE_MAP.get(piece.upper())
+        return c_score
 
     def sortPossibleMoves(self):
         self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=self.isWhitesTurn())
+
+    def rankPossibleMoves(self):
+        self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.rank, reverse=self.isWhitesTurn())
 
     def moveIfPossible(self, r1, c1, r2, c2):
         for m in self.possibleMoves:
@@ -510,7 +564,8 @@ class Game:
                 self.board[r1][0] = ' '
                 saved_positions += [SquarePositionValue(self.board[r1][3] , r1, 0) , SquarePositionValue(' ', r1, 3)]
 
-        historyState = HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
+        historyState =  self.createHistoryState(saved_positions, squareValue1, squareValue2, r1, c1, r2, c2)
+        #HistoryState(saved_positions, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
 
         # if pawn promotion
         if squareValue1 == 'P' and r2 == 0: squareValue1 = 'Q'
@@ -537,6 +592,15 @@ class Game:
             return False
 
         return True
+
+    def createHistoryState(self, saved_positions, piece, captured_piece, r1, c1, r2, c2):
+        return HistoryState(saved_positions, piece, captured_piece, r1, c1, r2, c2, self.whiteMovements, self.blackMovements, self.possibleMoves, self.castle_flags.copy())
+
+    def getLastMove(self):
+        if self.movementHistory:
+            return self.movementHistory[-1]
+
+
 
     def lastMoveStr(self):
         if self.movementHistory:
@@ -656,7 +720,10 @@ class Game:
         return self.is_draw_by_repetion() or self.isStaleMate()
 
     def isCheckMate(self):
-        return not self.possibleMoves and self.isKingUnderAttack(self.isWhitesTurn())
+        return not self.possibleMoves and self.isCheck()
+
+    def isCheck(self):
+        return self.isKingUnderAttack(self.isWhitesTurn())
 
     def isStaleMate(self):
         return not self.possibleMoves and not self.isKingUnderAttack(self.isWhitesTurn())
@@ -697,6 +764,7 @@ class Game:
         print("GAME after evaluated:: ==========")
         printGame(self)
         if self.possibleMoves:
+            self.sortPossibleMoves()
             eval_moves = [m for m in self.possibleMoves if m.evaluation_completed]
             if eval_moves:
                 bestMoveNode = eval_moves[0]
@@ -725,7 +793,7 @@ class Game:
         self.evaluation_start_time = time.time()
         self.evaluation_max_time = maxTime
 
-        self.sortPossibleMoves()
+        self.rankPossibleMoves()
         pruningDelta = 1.0;
 
         depth = 3
@@ -748,7 +816,7 @@ class Game:
                 print("timeout")
                 break
             else:
-                self.sortPossibleMoves()
+                self.rankPossibleMoves()
                 print("there is still time left, continuing evaluation. Best moves so far:")
                 printPossibleMoves(self)
 
@@ -779,7 +847,8 @@ class Game:
 
             isWhiteTurn = self.isWhitesTurn()
 
-            self.possibleMoves = sorted(self.possibleMoves, key=lambda moveNode: moveNode.score, reverse=isWhiteTurn)
+            self.rankPossibleMoves()
+
 
             #print("checking nMoves:" + str(movementsToCheck) + ", depth="+ str(depth) + "/"+str(len(searchParams)) +" on board:")
             #printBoard(self.board)

@@ -50,7 +50,7 @@ Board= [
 
 #Board=KING_AND_ROOKS_POSITION
 #Board=INITIAL_POSITION
-IsWhiteTurn=False
+IsWhiteTurn=True
 
 
 
