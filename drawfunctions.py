@@ -10,14 +10,14 @@ import time
 
 
 Board= [
-    ['r', 'n', 'b', ' ', 'k', 'b', 'n', 'r'],
-    ['p', 'p', 'p', ' ', ' ', 'p', 'p', 'p'],
+    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+    ['p', 'p', 'p', 'p', ' ', 'p', 'p', 'p'],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', 'q', 'p', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', 'p', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', 'N', ' ', ' '],
     ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
-    ['R', 'N', 'B', 'Q', 'K', 'B', ' ', 'R']];
+    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']];
 
 Board = INITIAL_POSITION
 game = Game(Board, True)
@@ -50,6 +50,11 @@ def play():
     canvas.after(50, doComputerMove)
 
 
+def calcScore():
+    global originClick, destClick, game, square_width, images, root, ComputerIsMoving
+    print(" board score: " + str(round(game.calculate_snapshot_core(), 3)))
+    print(" score details: " + str(game.score_details))
+
 def autoPlay():
     global originClick, destClick, game, square_width, images, root, ComputerIsMoving
     while not IsGameEnd:
@@ -60,7 +65,7 @@ def autoPlay():
 
 def tryComputerMove():
     global originClick, destClick, game, square_width, images, root, ComputerIsMoving
-    if not game.isWhitesTurn():
+    if not game.isWhitesTurn() and int(evalTimeBtn.get()) > 0:
         doComputerMove()
 
 
@@ -199,8 +204,16 @@ autoPlayBtn.pack(side=tk.LEFT)
 
 var = StringVar(root)
 var.set("5")
-evalTimeBtn = Spinbox(frame, from_=1, to=10, textvariable=var)
+evalTimeBtn = Spinbox(frame, from_=0, to=10, textvariable=var)
 
 evalTimeBtn.pack()
+
+calcScoreBtn = tk.Button(frame,
+                   text="Calc score",
+                   fg="black",
+                   bg="blue",
+                   bd=10,
+                   command=calcScore)
+calcScoreBtn.pack(side=tk.LEFT)
 
 root.mainloop()

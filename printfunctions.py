@@ -54,7 +54,7 @@ def moveAsString(move, board):
     return  str(move)
 
 def printGame(game):
-    game.sortPossibleMoves()
+    game.rankPossibleMoves()
     printBoard(game.board)
     print(" is white? " + str(game.isWhitesTurn()))
 
@@ -62,6 +62,8 @@ def printGame(game):
     print(" is black king under attack? " + str(game.blackMovements.isKingUnderAttack))
     print(" bestMove score: " + str(game.bestMoveScoreAndDepth()))
     print(" board score: " + str(round(game.calculate_snapshot_core(), 3)))
+    print(" score details: " + str(game.score_details))
+
     print("last Move [no=" + str(game.number_of_moves()) + "]: " + game.lastMoveStr())
     print("state: " + game.state())
     print("previous States: " + str(game.previousPositions))

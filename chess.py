@@ -213,7 +213,7 @@ def calculateMovements(board, can_castle_status):
 
 
 def isWhitePiece(piece):
-    return piece.isupper()
+    return piece != ' ' and piece.isupper()
 
 
 
@@ -321,7 +321,7 @@ class Game:
         self.center_score_factor = 1.05
         self.wide_center_score_factor = 1.01
         self.check_store = 0.02
-        self.capture_factor = 0.05
+        self.capture_factor = 0.8
 
         self.pieceScoreMap = {
             " ": 0,
@@ -352,6 +352,8 @@ class Game:
         # max time in seconds
         self.evaluation_max_time = 6
         self.evaluation_timed_out = False
+
+        self.score_details = {}
 
 
     def state(self):
@@ -460,7 +462,14 @@ class Game:
     def createMoveNode(self, r1, c1, r2, c2):
 
         score = self.calculate_snapshot_core()
+        rank = score
+       #rank = self.calc_rank(score, r1, c1, r2, c2)
+        lastMove = self.getLastMove()
+        piece = lastMove.piece
+        captured_piece = lastMove.captured_piece
+        return MoveNode(r1, c1, r2, c2, rank, score, piece, captured_piece)
 
+    def calc_rank(self, score, r1, c1, r2, c2):
         rank = score
 
         sign = -1 if self.isWhitesTurn() else 1;
@@ -469,22 +478,74 @@ class Game:
         self.whiteMovements
 
         if self.isCheck():
-            extra += 1000
+            extra += 9
 
         lastMove = self.getLastMove()
         if lastMove:
             piece = lastMove.piece
             captured_piece = lastMove.captured_piece
-            attacks =  self.whiteMovements.attacks if self.isWhitesTurn() else self.blackMovements.attacks
-            is_captured_defended = True if attacks[r2][c2] else False
-            extra += 10 * self.capture_score(piece, captured_piece, is_captured_defended)
+
+            attacks = self.blackMovements.attacks if isWhitePiece(piece) else self.whiteMovements.attacks
+            if captured_piece != ' ':
+                is_captured_defended = True if attacks[r2][c2] else False
+                captured_score = self.capture_score(piece, captured_piece, is_captured_defended)
+                # print("cap score[", piece, "_", r1, "-", c1, "]", captured_score)
+                extra += 100 * captured_score
+            else:
+                # piece is under attack
+                defenses = self.whiteMovements.attacks if isWhitePiece(piece) else self.blackMovements.attacks
+                if len(attacks[r1][c1]) > 0:
+                    is_piece_defended = True if defenses[r1][c1] else False
+                    defense_score = self.defense_score(piece, attacks[r1][c1], is_piece_defended)
+                    extra += 10 * defense_score
+
+                if len(attacks[r2][c2]) > 0:
+                    is_piece_defended = False
+                    for p, r, c in defenses[r2][c2]:
+                        if p != piece or c != c1 or r != r1:
+                            is_piece_defended = True
+                    defense_score = self.defense_score(piece, attacks[r2][c2], is_piece_defended)
+                    extra -= 10 * defense_score
 
         if self.is_castle(piece, c1, c2):
-            extra += 10
+            # print("iscastle score[", piece, "_", r1, "-", c1, "]", 10)
+            extra += 5
+
+        fork_score = self.fork_score(piece, r2, c2)
+        # print("Fork score[", piece, "_", r1, "-", c1, "]", fork_score)
+        extra += fork_score
 
         rank += sign * extra
+        return rank
 
-        return MoveNode(r1, c1, r2, c2, rank, score, piece, captured_piece)
+
+    def defense_score(self, piece, attacks, is_piece_defended):
+        d_score = 0.0
+        piece_value = PIECE_SCORE_MAP.get(piece.upper())
+        if not is_piece_defended:
+            return piece_value
+        else:
+            for attacker, r, c in attacks:
+                attacker_value = PIECE_SCORE_MAP.get(attacker.upper())
+                diff_value = piece_value - attacker_value
+                d_score = max(d_score, diff_value)
+
+        return d_score
+
+    def fork_score(self, piece, r1, c1):
+        if c1 != 0 and c1 != 7 and piece.upper() == 'P':
+            c_p1 = c1 - 1
+            c_p2 = c1 + 1
+
+            r_p = r1 + 1 if self.isWhitesTurn() else r1 - 1
+            p1 = self.board[r_p][c_p1]
+            p2 = self.board[r_p][c_p2]
+            if p1 == ' ' or p2 == ' ':
+                return 0.0
+            return 20.0 if (isSameColor(p1, p2) and not isSameColor(piece, p2) ) else 0.0
+        else:
+            return 0.0
+
 
     def is_castle(self, piece, c1, c2):
         return piece.upper() == 'K' and abs(c1 - c2) == 2
@@ -689,6 +750,8 @@ class Game:
 
 
     def calculate_snapshot_core(self):
+
+
         if self.is_draw_by_repetion():
              return 0.0
         #if self.is_draw():
@@ -697,24 +760,87 @@ class Game:
        # if self.isCheckMate():
        #     return -self.MAX_SCORE if self.isWhitesTurn() else self.MAX_SCORE;
 
-        points = 0.0
+
+        position_score = 0.0
+        pawn_advances_score = 0.0
+        white_capture_score = 0.0
+        black_capture_score = 0.0
+        kind_moves = 0.0
+        development = 0.0
+
+
         for r in range(0,8):
             for c in range(0,8):
-                points += self.positionScore(r,c)
-                points += self.score_if_is_pawn(r,c)
+                position_score += self.positionScore(r,c)
+                if self.isFinal():
+                    pawn_advances_score += self.score_if_is_pawn(r,c)
 
-        for capture in self.whiteMovements.captures:
-            points += self.score_capture(capture)
+        if self.isWhitesTurn():
+            for capture in self.whiteMovements.captures:
+                white_capture_score = max(white_capture_score, self.score_capture(capture))
 
-        for capture in self.blackMovements.captures:
-            points -= self.score_capture(capture)
+            if len(self.blackMovements.captures) > 1:
+                good_attacks = 0
+                for capture in self.blackMovements.captures:
+                    if self.score_capture(capture) > 0:
+                        good_attacks += 1
+                if good_attacks > 1: black_capture_score = - 1.0*self.capture_factor
+        else:
+            for capture in self.blackMovements.captures:
+                black_capture_score = min(black_capture_score, -self.score_capture(capture))
+
+            if len(self.whiteMovements.captures) > 1:
+                good_attacks = 0
+                for capture in self.whiteMovements.captures:
+                    if self.score_capture(capture) > 0:
+                        good_attacks += 1
+                if good_attacks > 1: white_capture_score = 1.0*self.capture_factor
+
+        if self.isOpening():
+            development = self.score_development()
+
 
         if self.isFinal():
             if self.isWhitesTurn():
-                points += self.scoreKingMoves(self.whiteMovements.kingValidMoves)
+                kind_moves += self.scoreKingMoves(self.whiteMovements.kingValidMoves)
             else:
-                points -= self.scoreKingMoves(self.blackMovements.kingValidMoves)
+                kind_moves -= self.scoreKingMoves(self.blackMovements.kingValidMoves)
+
+        self.score_details = {
+            "position": position_score,
+            "pawn_advances": pawn_advances_score,
+            "white_capture": white_capture_score,
+            "black_capture": black_capture_score,
+            "kind_moves": kind_moves,
+            "development": development,
+        }
+        points = position_score
+        points += pawn_advances_score
+        points += white_capture_score
+        points += black_capture_score
+        points += kind_moves
+        points += development
+
         return points
+
+
+    def score_development(self):
+        d_score = 0.0
+        if self.board[0][1] == 'n': d_score += 1
+        if self.board[0][2] == 'b': d_score += 1
+        if self.board[0][5] == 'b': d_score += 1
+        if self.board[0][6] == 'n': d_score += 1
+        #if self.board[1][3] == 'p': d_score += 1
+        if self.board[1][4] == 'p': d_score += 1
+        if self.board[7][1] == 'N': d_score -= 1
+        if self.board[7][2] == 'B': d_score -= 1
+        if self.board[7][5] == 'B': d_score -= 1
+        if self.board[7][6] == 'N': d_score -= 1
+        #if self.board[7][3] == 'P': d_score -= 1
+        if self.board[7][4] == 'P': d_score -= 1
+        return 0.2*d_score
+
+
 
     def is_draw(self):
         return self.is_draw_by_repetion() or self.isStaleMate()
@@ -796,8 +922,8 @@ class Game:
         self.rankPossibleMoves()
         pruningDelta = 1.0;
 
-        depth = 3
-        MAX_DEPTH = 3
+        depth = 4
+        MAX_DEPTH = 4
         while not self.evaluation_max_time_reached():
             searchParams = []
             for d in range(0, min(depth, MAX_DEPTH)):
@@ -860,7 +986,8 @@ class Game:
                     break
                 self.evaluation_timed_out = False
                 moveNode = self.possibleMoves[moveNumber]
-                #print("checking move(" + str(moveNumber) + "):" + str(moveNode) , self.isWhitesTurn(), " depth " ,depth)
+               # spaces = "-" * depth
+               # print(spaces + "checking move(" + str(moveNumber) + "):" + str(moveNode) , self.isWhitesTurn(), " depth " ,depth, ", pruningScore ", pruningScore, ", delta ", pruningDelta, " isWhite:", isWhiteTurn )
                 # do alpha/beta pruning
 
 
@@ -907,10 +1034,14 @@ class Game:
             return self.check_store
         captor_score = self.pieceScoreMap[capture.captor_piece.upper()]
         captured_score = self.pieceScoreMap[capture.captured_piece.upper()]
-        if not capture.captor_piece.upper().upper() == 'K' and captured_score > captor_score:
-            return self.capture_factor * (captured_score - captor_score)
-        else:
-            return 0.0
+
+        attacks = self.blackMovements.attacks if isWhitePiece(capture.captor_piece) else self.whiteMovements.attacks
+
+        is_captured_defended = True if attacks[capture.r2][capture.c2] else False
+
+        s = (captured_score - captor_score) if is_captured_defended else captured_score
+        return self.capture_factor * s
+
 
     def positionScore(self, row, col):
         squareValue = self.board[row][col]
@@ -946,7 +1077,8 @@ class Game:
                 else: score += i+1
         return score * self.kindMoveFactor;
 
-
+    def isOpening(self):
+        return self.number_of_moves() < 10
 
     def isFinal(self):
         return self.number_of_moves() > 40
@@ -960,7 +1092,7 @@ class Capture:
         self.captured_piece = captured_piece
         self.r1 = r1
         self.c1 = c1
-        self.c1 = c2
+        self.c2 = c2
         self.r2 = r2
 
 
