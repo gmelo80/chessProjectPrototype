@@ -10,16 +10,17 @@ import time
 
 
 Board= [
-    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-    ['p', 'p', 'p', 'p', ' ', 'p', 'p', 'p'],
+    [' ', ' ', ' ', ' ', 'k', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'p', ' ', 'p', ' ', ' '],
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', 'p', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
     [' ', ' ', ' ', ' ', 'P', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    ['P', 'P', 'P', 'P', ' ', 'P', 'P', 'P'],
-    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']];
+    [' ', ' ', ' ', ' ', 'K', ' ', ' ', ' ']];
 
 Board = INITIAL_POSITION
+# Board = KING_AND_PAWS_POSITION
 game = Game(Board, True)
 
 originClick=None
@@ -54,6 +55,7 @@ def calcScore():
     global originClick, destClick, game, square_width, images, root, ComputerIsMoving
     print(" board score: " + str(round(game.calculate_snapshot_core(), 3)))
     print(" score details: " + str(game.score_details))
+
 
 def autoPlay():
     global originClick, destClick, game, square_width, images, root, ComputerIsMoving
